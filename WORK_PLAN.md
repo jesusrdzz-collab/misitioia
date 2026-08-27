@@ -1,10 +1,12 @@
 # WORK_PLAN - MiSitio IA (Creador de Sitios Web con IA)
 > **Estado**: EN DESARROLLO
 > **Última actualización**: 2026-08-27
-> **Fase actual**: Fase 0 — Setup inicial
-> **Dominio**: misitioia.com (pendiente de compra)
-> **Supabase**: pendiente de crear
-> **Repo**: pendiente de crear
+> **Fase actual**: Fase 0 — Setup inicial (casi completa)
+> **Dominio**: misitioia.com (**pendiente de compra manual** — Vercel MCP no tiene permiso de compra)
+> **Supabase**: ✅ mthlqoploeisigzvwory (ACTIVE_HEALTHY, us-east-1)
+> **Repo**: ✅ https://github.com/jesusrdzz-collab/misitioia
+> **Vercel**: ✅ https://misitioia.vercel.app (deploy exitoso)
+> **URL compra dominio**: https://vercel.com/domains/search?q=misitioia.com ($11.25 USD)
 
 ---
 
@@ -36,13 +38,18 @@
 > **Estado:** EN PROGRESO
 > **Criterio de terminado:** `prueba.misitioia.com` sirve una página real
 
-- [ ] 0.1 Comprar dominio `misitioia.com` en Vercel
-- [ ] 0.2 Crear proyecto Supabase "MiSitio IA" ($10 USD/mes)
-- [ ] 0.3 Inicializar proyecto Next.js 16 + TypeScript + Tailwind
-- [ ] 0.4 Crear repo GitHub `misitioia`
-- [ ] 0.5 Configurar dominio comodín `*.misitioia.com` en Vercel
-- [ ] 0.6 Deploy inicial — `prueba.misitioia.com` responde
+- [ ] 0.1 Comprar dominio `misitioia.com` en Vercel — **PENDIENTE: compra manual** por Jesús en https://vercel.com/domains/search?q=misitioia.com
+- [x] 0.2 Crear proyecto Supabase "MiSitio IA" — ref `mthlqoploeisigzvwory`, us-east-1
+- [x] 0.3 Inicializar proyecto Next.js 16 + TypeScript + Tailwind — Next.js 16.3.3, React 19.2.8, Tailwind 4
+- [x] 0.4 Crear repo GitHub `misitioia` — https://github.com/jesusrdzz-collab/misitioia
+- [ ] 0.5 Configurar dominio comodín `*.misitioia.com` en Vercel — **requiere 0.1**
+- [x] 0.6 Deploy inicial — https://misitioia.vercel.app ✅ live
 - [ ] 0.7 Definir topes de conversaciones por nivel y costo de excedente
+- [x] 0.8 Middleware de subdomain routing (slug → /sites/[slug])
+- [x] 0.9 Supabase client/server helpers (@supabase/ssr)
+- [x] 0.10 Tipos TypeScript del sistema multi-tenant
+- [x] 0.11 Landing page con pricing ($0 / $349 / $699 MXN)
+- [x] 0.12 Página placeholder de sitio de negocio
 
 ### Fase 1 — Multi-tenant + enrutamiento por subdominio
 > **Estado:** PENDIENTE
