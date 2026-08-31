@@ -1,6 +1,5 @@
 import type { MetadataRoute } from 'next'
-
-const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'misitioia.com'
+import { ROOT_DOMAIN } from '@/lib/domain'
 
 /**
  * robots.txt a nivel plataforma.

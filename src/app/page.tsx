@@ -13,13 +13,13 @@ export default function HomePage() {
           </div>
           <div className="flex items-center gap-4">
             <Link
-              href="/login"
+              href="/editar"
               className="text-sm text-blue-100 hover:text-white transition-colors"
             >
-              Iniciar sesión
+              Editar mi sitio
             </Link>
             <Link
-              href="/registro"
+              href="/crear"
               className="text-sm bg-white text-blue-700 px-4 py-2 rounded-full font-medium hover:bg-blue-50 transition-colors"
             >
               Empieza gratis
@@ -43,7 +43,7 @@ export default function HomePage() {
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
-              href="/registro"
+              href="/crear"
               className="w-full sm:w-auto bg-white text-blue-700 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-blue-50 transition-colors shadow-lg shadow-blue-900/20"
             >
               Crear mi sitio gratis →
@@ -85,7 +85,7 @@ export default function HomePage() {
                 step: '3',
                 emoji: '🚀',
                 title: 'Publicado al instante',
-                desc: 'Tu página queda en tu-negocio.misitioia.com lista para compartir con tus clientes.',
+                desc: 'Tu página queda en tu-negocio.misitio.site lista para compartir con tus clientes.',
               },
             ].map((item) => (
               <div
@@ -128,7 +128,7 @@ export default function HomePage() {
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-green-500 mt-0.5">✓</span>
-                  Subdominio tu-negocio.misitioia.com
+                  Subdominio tu-negocio.misitio.site
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-green-500 mt-0.5">✓</span>
@@ -140,7 +140,7 @@ export default function HomePage() {
                 </li>
               </ul>
               <Link
-                href="/registro"
+                href="/crear"
                 className="block text-center py-3 rounded-xl border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
               >
                 Empezar gratis
@@ -181,7 +181,7 @@ export default function HomePage() {
                 </li>
               </ul>
               <Link
-                href="/registro?plan=nivel_2"
+                href="/crear"
                 className="block text-center py-3 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors"
               >
                 Activar Nivel 2
@@ -219,7 +219,7 @@ export default function HomePage() {
                 </li>
               </ul>
               <Link
-                href="/registro?plan=nivel_3"
+                href="/crear"
                 className="block text-center py-3 rounded-xl border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
               >
                 Activar Nivel 3

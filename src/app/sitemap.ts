@@ -1,14 +1,13 @@
 import type { MetadataRoute } from 'next'
 import { listIndexableSites } from '@/lib/sites/queries'
-
-const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'misitioia.com'
+import { ROOT_DOMAIN } from '@/lib/domain'
 
 /**
  * Sitemap de la plataforma.
  *
  * Lista SOLO los sitios reclamados/activos (no los 'generado', para no publicar
  * en Google miles de sitios sin reclamar). Cada sitio vive en su subdominio
- * {slug}.misitioia.com, junto con sus páginas legales.
+ * {slug}.misitio.site, junto con sus páginas legales.
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = `https://${ROOT_DOMAIN}`

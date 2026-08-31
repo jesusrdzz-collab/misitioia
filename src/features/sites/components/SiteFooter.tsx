@@ -1,6 +1,5 @@
 import Link from 'next/link'
-
-const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'misitioia.com'
+import { ROOT_DOMAIN } from '@/lib/domain'
 
 interface Props {
   businessName: string

@@ -1,12 +1,11 @@
 # WORK_PLAN - MiSitio IA (Creador de Sitios Web con IA)
 > **Estado**: EN DESARROLLO
 > **Última actualización**: 2026-08-31
-> **Fase actual**: Fase 2.5 (pulido) COMPLETA — legales + AEO + rediseño
-> **Dominio**: misitioia.com (**pendiente de compra manual** — Vercel MCP no tiene permiso de compra)
+> **Fase actual**: Fase 4 (editor tipo chat) EN PROGRESO — v1 funcional del loop chat→IA→edición→preview
+> **Dominio**: **misitio.site** (comprado vía Vercel, conectándose por Jesús). Subdominios `negocio.misitio.site`, panel `app.misitio.site`. Configurable por env `NEXT_PUBLIC_ROOT_DOMAIN` (default `misitio.site`, ver `src/lib/domain.ts`). ⚠️ Falta poner `NEXT_PUBLIC_ROOT_DOMAIN=misitio.site` en el env de Vercel.
 > **Supabase**: ✅ mthlqoploeisigzvwory (ACTIVE_HEALTHY, us-east-1)
 > **Repo**: ✅ https://github.com/jesusrdzz-collab/misitioia
 > **Vercel**: ✅ https://misitioia.vercel.app (deploy exitoso)
-> **URL compra dominio**: https://vercel.com/domains/search?q=misitioia.com ($11.25 USD)
 
 ---
 
@@ -124,16 +123,46 @@ Razón: no publicamos en Google miles de sitios sin reclamar (anti-spam SEO), pe
 - [ ] 3.4 Secciones condicionales (ej: "Nuestros servicios" vs "Nuestro menú")
 - [ ] 3.5 Imágenes genéricas por giro (stock o generadas)
 
-### Fase 4 — Panel del negocio
-> **Estado:** PENDIENTE
-> **Criterio de terminado:** El dueño reclama su página y la edita
+### Fase 4 — EDITOR TIPO CHAT (Base44/Hostinger AI) ⚡ nueva Fase 4
+> **Estado:** ✅ v1 FUNCIONAL (31-ago-2026). Loop chat→IA→edición→preview probado end-to-end con Gemini real.
+> **Criterio de terminado:** El dueño edita/crea su página conversando por chat y ve el preview en vivo ✅
+> **Cambio de alcance:** El editor ya NO es un panel de formularios; es un **chat conversacional** con dos entradas: edición del sitio generado y **creación autoservicio** desde cero (sin depender de TerraLeads).
 
-- [ ] 4.1 Auth con magic link (el dueño no tiene password, solo email/WhatsApp)
-- [ ] 4.2 Flujo de "reclamar sitio" → estado `generado` → `reclamado`
-- [ ] 4.3 Editor de contenido: nombre, horarios, teléfono, descripción, servicios
-- [ ] 4.4 Editor de catálogo de productos (reusar patrón de Mirage)
-- [ ] 4.5 Vista de contactos/leads que llegaron desde la página
-- [ ] 4.6 Regenerar página al guardar cambios (estática, no por visita)
+**UI de chat + preview en vivo**
+- [x] 4.1 `EditorWorkspace` (2 paneles, mobile-first): hilo de mensajes + input + subida de imágenes + preview en `<iframe>` del sitio real (`/sites/{slug}`) que se recarga al aplicar cambios (cache-bust `?preview=N`). Toggle Chat/Vista previa en móvil. — `src/features/editor/components/EditorWorkspace.tsx`
+- [x] 4.2 Burbujas de chat con lista de cambios aplicados (✓ por herramienta) + adjuntos de imagen.
+
+**Auth por magic link (Supabase, sin password)**
+- [x] 4.3 `LoginGate` (client) → Server Action `sendMagicLink` (server-side, setea verifier PKCE en cookie) → `emailRedirectTo=/auth/callback`.
+- [x] 4.4 `GET /auth/callback` → `exchangeCodeForSession(code)` → redirige a `next`. `signOut` action.
+- [x] 4.5 El dueño solo edita SU sitio: `authorizeSiteAccess(siteId, email)` compara `tenants.owner_email` con el email del JWT. Escrituras con service_role SOLO tras autorizar (evita el bug de `createBrowserClient` sin JWT — data 100% server-side con Server Actions).
+
+**Agente de IA con tool-calling (Gemini `gemini-2.5-flash`)**
+- [x] 4.6 Loop de function-calling por fetch REST (mismo patrón del generador, sin SDK extra) — `src/features/editor/agent.ts`. Encadena varias herramientas en un turno; máx 6 pasos.
+- [x] 4.7 8 herramientas de edición + 1 de creación, con args validados por Zod — `src/features/editor/tools.ts`: `updateBusinessInfo`, `updateBranding` (color/emoji), `updateHours`, `setServices`, `addProduct`, `updateProduct`, `setLogo`, `setHeroImage`, `createSite`.
+- [x] 4.8 Regla anti-invención heredada: si falta un dato, el chat lo PIDE (no inventa). System prompt en español mexicano, anti-marketing-barato.
+- [x] 4.9 Contexto del sitio (snapshot) inyectado al modelo, incluye `product_id` para `updateProduct` — `src/features/editor/context.ts`.
+
+**Imágenes (Supabase Storage multi-tenant)**
+- [x] 4.10 Bucket `site-images` (público para render) + columnas `logo_url`, `hero_image_url`, `emoji` en `site_content` (migración `phase4_editor_images_and_storage`).
+- [x] 4.11 Políticas por tenant en `storage.objects` (insert/update/delete solo el dueño de la carpeta `{tenant_id}/...`; lectura pública). Advisor de seguridad en verde.
+- [x] 4.12 Server Action `uploadSiteImage` (autoriza → sube con service_role → URL pública). El render del sitio muestra logo (barra), portada (hero) y emoji custom.
+
+**Creación autoservicio (`/crear`) y edición (`/editar`)**
+- [x] 4.13 `/crear`: chat en blanco → herramienta `createSite` crea tenant+site+content reusando `resolveUniqueSlug()` y `templateForGiro()`, estado `reclamado`, dueño = email autenticado. Tras crear, las siguientes herramientas editan el sitio nuevo en el mismo turno.
+- [x] 4.14 `/editar`: tras magic link, lista los sitios del dueño (o abre directo si es uno); si no tiene, ofrece **reclamar por slug** (`ClaimForm` → `claimSite`) o crear uno nuevo.
+- [x] 4.15 Re-render tras cada cambio: `revalidatePath('/sites/{slug}')` en la Server Action → preview e ISR reflejan la edición.
+- [x] 4.16 Landing (`/`) enlaza a `/crear` y `/editar` (antes apuntaba a `/registro` y `/login` inexistentes).
+
+**Validación**
+- [x] 4.17 `npm run typecheck` + `npm run build` en verde (todas las rutas presentes: `/crear`, `/editar`, `/auth/callback`). Pages renderizan 200 en runtime (LoginGate sin sesión).
+- [x] 4.18 Loop de IA probado con Gemini real (`scripts/test-editor-agent.ts`): mensaje "cambia color + agrega 2 servicios + pon horario" → 3 herramientas correctas, args válidos (hex exacto, servicios, horario 7 días con Domingo Cerrado), confirmación natural en español.
+
+**⚠️ Pendiente para runtime prod (NO bloquea; secretos que carga Jesús):**
+- `SUPABASE_SERVICE_ROLE_KEY` y `GEMINI_API_KEY` en el env de Vercel (ya usados por el generador; el editor los reutiliza). Local: `SUPABASE_SERVICE_ROLE_KEY` está VACÍA en `.env.local`, por eso el test de BD usa un cliente simulado; el loop de IA sí es real.
+- `NEXT_PUBLIC_ROOT_DOMAIN=misitio.site` en Vercel.
+- Auth Supabase: agregar la URL de redirect (`https://misitio.site/auth/callback`, `https://misitioia.vercel.app/auth/callback` y `http://localhost:3000/auth/callback`) al allow-list de Redirect URLs, y tener SMTP para enviar el magic link.
+- **Nota de seguridad (v1):** reclamar un sitio `generado` (sin dueño) solo pide el slug + un correo verificado por magic link. Endurecer la verificación (ej. código al teléfono/correo de la ficha) queda para una iteración posterior.
 
 ### Fase 5 — Widget de chat + canal web en Konnex
 > **Estado:** PENDIENTE
@@ -257,6 +286,24 @@ Razón: no publicamos en Google miles de sitios sin reclamar (anti-spam SEO), pe
 ### 2026-08-31: Fuentes premium por next/font en layout de /sites, no en el root
 - **Dato:** El root `layout.tsx` carga Inter global. Para el look premium de los sitios (Playfair Display display + Inter body) se creó `src/app/sites/[slug]/layout.tsx` con next/font exponiendo `--font-display`/`--font-body`. Las fuentes se aplican con `style={{fontFamily:'var(--font-display), serif'}}` (Tailwind v4, sin config extra).
 - **Aplicar en:** Render de sitios y páginas legales.
+
+### 2026-08-31: Gemini tool-calling por REST — mismo patrón del generador, sin SDK
+- **Dato:** El agente editor NO usa Vercel AI SDK; hace `fetch` a `.../models/gemini-2.5-flash:generateContent` con `tools:[{functionDeclarations}]`. El loop: leer `candidates[0].content.parts` → si hay `functionCall`, se re-agrega ese `content` (role `model`) y se responde con un `content` role `user` con parts `functionResponse` → repetir (máx 6). Termina cuando el modelo devuelve solo texto. Probado real: encadena 3+ herramientas en un turno.
+- **Dato clave:** `updateHours` recibe `hours: [{day,hours}]` (array), NO un objeto de llaves dinámicas — el schema de function-calling de Gemini no maneja bien objetos con claves arbitrarias. Se convierte a `{Lunes: "..."}` en el executor.
+- **Aplicar en:** Cualquier agente con herramientas sobre Gemini directo.
+
+### 2026-08-31: Escrituras del editor con service_role tras autorizar (no createBrowserClient)
+- **Decisión:** El editor autoriza en el servidor (`authorizeSiteAccess`: `tenants.owner_email` == email del JWT leído con `createServerSupabase`) y luego escribe con el cliente admin (service_role), acotado al `siteId`. Se evita por completo `createBrowserClient` con RLS (bug conocido: no manda JWT en queries → arrays vacíos). Toda la data del editor viaja por Server Actions.
+- **Aplicar en:** Todo el editor y futuros paneles con RLS.
+
+### 2026-08-31: Magic link server-side — verifier PKCE en cookie, callback exchange
+- **Dato:** `sendMagicLink` corre como Server Action con `createServerSupabase` (cookies escribibles en Server Actions) → setea el code-verifier en cookie. El email vuelve a `/auth/callback?code=...&next=...` y ahí `exchangeCodeForSession(code)` lee el verifier de la cookie. No hace falta browser client ni tocar plantillas de correo. Requiere las Redirect URLs en el allow-list de Supabase Auth.
+- **Aplicar en:** Auth sin password en cualquier proyecto Next + Supabase.
+
+### 2026-08-31: ROOT_DOMAIN centralizado y configurable (misitioia.com → misitio.site)
+- **Error potencial:** El default del dominio estaba repetido como literal `'misitioia.com'` en 7+ archivos. Al cambiar a `misitio.site` había riesgo de dejar alguno viejo.
+- **Fix:** `src/lib/domain.ts` exporta `ROOT_DOMAIN` (`NEXT_PUBLIC_ROOT_DOMAIN || 'misitio.site'`) + `siteUrl()`/`siteHost()`. Todos los módulos importan de ahí. El slug se deriva del host quitando `ROOT_DOMAIN`; sigue funcionando en `misitioia.vercel.app/sites/{slug}`.
+- **Aplicar en:** Cualquier dato derivado del dominio (URLs canónicas, sitemap, subdominios, middleware).
 
 ## 📦 Insumo externo reutilizable (agregado 31-ago-2026)
 

@@ -6,8 +6,7 @@
  */
 import type { RenderableSite, SiteStatus } from '@/lib/types/site'
 import { giroNombre } from '@/features/generator/giros'
-
-const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'misitioia.com'
+import { ROOT_DOMAIN } from '@/lib/domain'
 
 /** Un sitio reclamado o activo SÍ se publica en buscadores. Generado NO. */
 export function isIndexable(status: SiteStatus): boolean {

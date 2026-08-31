@@ -1,9 +1,23 @@
 # 🌐 Brief de proyecto — Creador de sitios web con IA
 
-> **Estado: PROPUESTA PARA DESARROLLO.** No se ha escrito una línea de código.
+> **Estado: EN DESARROLLO.** Fases 0–2.5 ✅ y Fase 4 (editor tipo chat) v1 funcional.
 > Creado 20-ago-2026 · Nace de `PORTAFOLIO_SAAS_FACTORY.md` → PROYECTO A (Web Builder IA) y de
 > `TERRALEADS/PLAN_MARKETING.md` (la página gratis como imán de prospección).
 > **Este documento es el punto de entrada del agente de desarrollo.** Léelo completo antes de codear.
+>
+> **Nombre/dominio (31-ago-2026):** **MiSitio IA** en **misitio.site** (comprado vía Vercel).
+> Subdominios de clientes `negocio.misitio.site`, panel `app.misitio.site`. El dominio es
+> configurable por env `NEXT_PUBLIC_ROOT_DOMAIN` (default `misitio.site`, ver `src/lib/domain.ts`);
+> la URL de prueba sigue siendo `misitioia.vercel.app/sites/{slug}`.
+>
+> **⚡ Cambio de alcance (31-ago-2026) — el editor es un CHAT, no un panel de formularios.**
+> El frontend de edición/creación es un **chat conversacional estilo Base44/Hostinger AI** (dos
+> paneles: hilo + vista previa en vivo), con **dos entradas**: (1) **edición** del sitio ya generado
+> —el dueño reclama y refina su página hablando— y (2) **creación autoservicio** —un negocio nuevo
+> describe lo que quiere y se le crea el sitio desde cero, sin depender de TerraLeads—. Un agente de
+> IA con tool-calling (Gemini) ejecuta herramientas que editan el contenido estructurado en Supabase;
+> las imágenes (logo, portada, fotos) se guardan en Supabase Storage multi-tenant. Detalle e
+> implementación en `WORK_PLAN.md` (Fase 4).
 
 ---
 

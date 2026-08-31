@@ -85,7 +85,9 @@ export default async function SitePage({ params }: SitePageProps) {
   const b = toBusinessView(data)
   const base = await siteBasePath(slug)
   const template = templateForGiro(site.giro)
-  const emoji = template.emoji
+  const emoji = content?.emoji || template.emoji
+  const logoUrl = content?.logo_url || null
+  const heroImage = content?.hero_image_url || null
 
   const primary = b.primaryColor
   const accent = b.accentColor
@@ -117,7 +119,12 @@ export default async function SitePage({ params }: SitePageProps) {
         <div className="sticky top-0 z-30 backdrop-blur bg-white/80 border-b border-gray-100">
           <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between gap-4">
             <div className="flex items-center gap-2 min-w-0">
-              <span className="text-xl shrink-0" aria-hidden>{emoji}</span>
+              {logoUrl ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img src={logoUrl} alt={`Logo de ${site.business_name}`} className="h-9 w-9 rounded-lg object-cover shrink-0" />
+              ) : (
+                <span className="text-xl shrink-0" aria-hidden>{emoji}</span>
+              )}
               <span className="font-semibold text-gray-900 truncate" style={display}>
                 {site.business_name}
               </span>
@@ -142,6 +149,22 @@ export default async function SitePage({ params }: SitePageProps) {
           className="relative overflow-hidden text-white"
           style={{ background: `linear-gradient(140deg, ${primary} 0%, ${accent} 100%)` }}
         >
+          {heroImage && (
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={heroImage}
+                alt=""
+                aria-hidden
+                className="absolute inset-0 w-full h-full object-cover opacity-35"
+              />
+              <div
+                className="absolute inset-0"
+                style={{ background: `linear-gradient(140deg, ${primary}cc 0%, ${accent}cc 100%)` }}
+                aria-hidden
+              />
+            </>
+          )}
           <div
             className="absolute -top-24 -right-16 w-80 h-80 rounded-full blur-3xl opacity-30"
             style={{ background: 'white' }}

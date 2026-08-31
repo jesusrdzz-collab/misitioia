@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
+import { ROOT_DOMAIN } from '@/lib/domain'
 
 /**
  * Subdominios reservados — NO son sitios de negocios.
@@ -14,13 +15,11 @@ const RESERVED_SUBDOMAINS = new Set([
   'ftp',
 ])
 
-const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'misitioia.com'
-
 export async function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || ''
   const url = request.nextUrl.clone()
 
-  // Extraer subdominio: "mi-negocio.misitioia.com" → "mi-negocio"
+  // Extraer subdominio: "mi-negocio.misitio.site" → "mi-negocio"
   // En dev: "mi-negocio.localhost:3000" → "mi-negocio"
   const isLocalhost = hostname.includes('localhost')
   const currentHost = isLocalhost

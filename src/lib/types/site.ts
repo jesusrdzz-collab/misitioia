@@ -27,7 +27,7 @@ export interface Tenant {
 export interface Site {
   id: string
   tenant_id: string
-  slug: string                    // subdominio: "mi-negocio" → mi-negocio.misitioia.com
+  slug: string                    // subdominio: "mi-negocio" → mi-negocio.misitio.site
   business_name: string
   giro: string | null             // slug del giro (ej: "veterinaria")
   template: string                // nombre de la plantilla visual
@@ -57,6 +57,9 @@ export interface SiteContent {
   hero_title: string | null
   hero_subtitle: string | null
   about_text: string | null
+  logo_url: string | null
+  hero_image_url: string | null
+  emoji: string | null
   services: ServiceItem[]
   highlights: string[]
   contact_phone: string | null

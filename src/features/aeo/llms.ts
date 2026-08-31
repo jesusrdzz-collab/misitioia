@@ -8,6 +8,7 @@
  */
 import type { RenderableSite } from '@/lib/types/site'
 import { toBusinessView } from '@/features/sites/business'
+import { ROOT_DOMAIN } from '@/lib/domain'
 
 export function buildLlmsTxt(data: RenderableSite): string {
   const b = toBusinessView(data)
@@ -85,9 +86,7 @@ export function buildLlmsTxt(data: RenderableSite): string {
   lines.push('---')
   lines.push('')
   lines.push(
-    `Página creada con MiSitio IA (https://${
-      process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'misitioia.com'
-    }). Datos verificados de fuentes públicas; el negocio puede solicitar cambios o baja.`,
+    `Página creada con MiSitio IA (https://${ROOT_DOMAIN}). Datos verificados de fuentes públicas; el negocio puede solicitar cambios o baja.`,
   )
   lines.push('')
 

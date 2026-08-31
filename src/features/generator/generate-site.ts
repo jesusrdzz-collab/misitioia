@@ -6,6 +6,7 @@ import { templateForGiro } from './templates'
 import { giroNombre } from './giros'
 import { normalizeWorkingHours } from './working-hours'
 import { resolveUniqueSlug } from './slug'
+import { ROOT_DOMAIN } from '@/lib/domain'
 
 /**
  * Fase 2 — Generador automático de sitios.
@@ -61,8 +62,6 @@ export interface GenerateResult {
   url: string
   status: 'generado'
 }
-
-const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'misitioia.com'
 
 /**
  * Persiste un sitio generado (tenant + site + site_content) usando el cliente

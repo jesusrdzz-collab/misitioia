@@ -3,7 +3,7 @@ import { headers } from 'next/headers'
 /**
  * Base de rutas del sitio, según cómo se está sirviendo:
  *
- * - Vía subdominio de negocio ({slug}.misitioia.com): el middleware reescribe
+ * - Vía subdominio de negocio ({slug}.misitio.site): el middleware reescribe
  *   y deja el header `x-site-slug`. Las rutas internas son limpias → base ''.
  *   Un enlace a "/terminos" lo reescribe el middleware a /sites/{slug}/terminos.
  * - Vía URL de prueba (misitioia.vercel.app/sites/{slug}): no hay reescritura,
