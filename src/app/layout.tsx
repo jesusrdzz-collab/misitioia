@@ -1,26 +1,78 @@
-import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import type { Metadata, Viewport } from 'next'
+import { Inter, Playfair_Display } from 'next/font/google'
 import './globals.css'
+import { SITE_URL, BRAND } from '@/features/marketing/brand'
 
 const inter = Inter({
   variable: '--font-inter',
   subsets: ['latin'],
+  display: 'swap',
+})
+
+// Tipografía display premium para los títulos del producto (misma familia que
+// usan los sitios generados, para branding consistente).
+const playfair = Playfair_Display({
+  variable: '--font-display',
+  subsets: ['latin'],
+  display: 'swap',
+  weight: ['500', '600', '700', '800'],
 })
 
 export const metadata: Metadata = {
-  title: 'MiSitio IA — Tu página web lista en minutos',
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: 'MiSitio IA — Tu página web que además vende sola',
+    template: '%s | MiSitio IA',
+  },
   description:
-    'Generamos la página web de tu negocio con inteligencia artificial. Sin costo, sin complicaciones, lista para publicar.',
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_ROOT_DOMAIN
-      ? `https://${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`
-      : 'http://localhost:3000'
-  ),
+    'Creamos la página web de tu negocio con IA, gratis. Y le conectamos a Victoria: un asistente que atiende y vende por ti 24/7 por WhatsApp y web, y agenda videollamadas.',
+  applicationName: 'MiSitio IA',
+  manifest: '/manifest.webmanifest',
+  robots: {
+    index: true,
+    follow: true,
+    'max-snippet': -1,
+    'max-image-preview': 'large',
+    'max-video-preview': -1,
+  },
+  icons: {
+    icon: [
+      { url: '/favicon.png', type: 'image/png' },
+      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'MiSitio IA',
+  },
+  keywords: [
+    'crear página web',
+    'sitio web con IA',
+    'página web gratis México',
+    'asistente de ventas IA',
+    'chatbot WhatsApp negocio',
+    'MiSitio IA',
+  ],
+  authors: [{ name: BRAND.name }],
+  creator: BRAND.name,
+  publisher: BRAND.name,
+}
+
+export const viewport: Viewport = {
+  themeColor: '#ea580c',
+  width: 'device-width',
+  initialScale: 1,
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className={`${inter.variable} h-full antialiased`}>
+    <html
+      lang="es"
+      className={`${inter.variable} ${playfair.variable} h-full antialiased`}
+    >
       <body className="min-h-full flex flex-col font-sans">{children}</body>
     </html>
   )
