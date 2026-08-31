@@ -1,7 +1,7 @@
 # WORK_PLAN - MiSitio IA (Creador de Sitios Web con IA)
 > **Estado**: EN DESARROLLO
 > **Última actualización**: 2026-08-31
-> **Fase actual**: Fase 1 completa + Fase 2 (generador) funcional end-to-end
+> **Fase actual**: Fase 2.5 (pulido) COMPLETA — legales + AEO + rediseño
 > **Dominio**: misitioia.com (**pendiente de compra manual** — Vercel MCP no tiene permiso de compra)
 > **Supabase**: ✅ mthlqoploeisigzvwory (ACTIVE_HEALTHY, us-east-1)
 > **Repo**: ✅ https://github.com/jesusrdzz-collab/misitioia
@@ -80,6 +80,38 @@
 
 **⚠️ Pendiente para runtime automático en producción (NO bloquea; equivalente al dominio):**
 `.env.local` y env de Vercel necesitan `SUPABASE_SERVICE_ROLE_KEY` (MiSitio) y `TERRALEADS_SUPABASE_SERVICE_KEY` (lectura de leads) + `GENERATOR_SECRET`. No son recuperables por MCP (son secretos). La prueba real usó Gemini real + persistencia vía MCP (elevado). Una vez cargadas las keys, `POST /api/generate` genera solo.
+
+### Fase 2.5 — Pulido (legales + AEO + rediseño)
+> **Estado:** ✅ COMPLETA (31-ago-2026)
+> **Criterio de terminado:** Los 2 sitios de prueba tienen páginas legales, AEO por sitio y nuevo diseño moderno. Build + typecheck en verde, deploy READY.
+
+**Mejora 1 — Páginas legales por sitio**
+- [x] 2.5.1 Generador legal desde plantilla mexicana — `src/features/legal/legal-content.ts` (Aviso de Privacidad conforme LFPDPPP, Términos de servicio estándar, Política de Cookies). Rellena datos reales del negocio; nada inventado (usa genéricos legales donde falta el dato).
+- [x] 2.5.2 Rutas `/terminos`, `/aviso-de-privacidad`, `/cookies` bajo `src/app/sites/[slug]/` + render `src/features/legal/LegalPage.tsx` con branding del giro.
+- [x] 2.5.3 Footer del sitio enlaza las 3 legales — `src/features/sites/components/SiteFooter.tsx`. Enlaces context-aware (`src/features/sites/base-path.ts`): funcionan en subdominio y en la URL de prueba `/sites/{slug}`.
+
+**Mejora 2 — AEO (visibilidad para chatbots de IA)**
+- [x] 2.5.4 JSON-LD `LocalBusiness` por sitio con datos reales (name, address, telephone, aggregateRating real, openingHours, sameAs) — `src/features/aeo/structured-data.ts`. Presente SIEMPRE (describe negocio real).
+- [x] 2.5.5 `meta robots` gateado por estado: `generado` → `noindex,nofollow`; `reclamado`/`activo` → `index,follow` + `max-snippet:-1, max-image-preview:large, max-video-preview:-1`.
+- [x] 2.5.6 `/llms.txt` por sitio — `src/app/sites/[slug]/llms.txt/route.ts` + `src/features/aeo/llms.ts`. Siempre disponible (solo describe negocio real; no publica en Google).
+- [x] 2.5.7 `robots.txt` de plataforma — `src/app/robots.ts`. Permite bots IA (GPTBot, OAI-SearchBot, ChatGPT-User, ClaudeBot, PerplexityBot, Google-Extended, Applebot-Extended, CCBot, cohere-ai, Bytespider, Amazonbot, Meta-ExternalAgent). Apunta al sitemap.
+- [x] 2.5.8 `sitemap.ts` — `src/app/sitemap.ts` lista SOLO sitios `reclamado`/`activo` (los `generado` NO van al sitemap). `listIndexableSites()` en queries.
+
+**Decisión de gating AEO por estado (documentada):**
+| Elemento | `generado` (sin reclamar) | `reclamado` / `activo` |
+|---|---|---|
+| meta robots | `noindex, nofollow` | `index, follow` + flags snippet |
+| En sitemap.xml | ❌ No | ✅ Sí |
+| JSON-LD LocalBusiness | ✅ Sí (negocio real) | ✅ Sí |
+| /llms.txt | ✅ Sí (negocio real) | ✅ Sí |
+| robots.txt (permite bots IA) | ✅ Sí (nivel plataforma, no por status) | ✅ Sí |
+
+Razón: no publicamos en Google miles de sitios sin reclamar (anti-spam SEO), pero el JSON-LD y el llms.txt de datos reales sí ayudan a que la IA reconozca el negocio cuando el dueño pregunte. `dado_de_baja` queda oculto por RLS → 404 en todo.
+
+**Mejora 3 — Rediseño moderno y elegante**
+- [x] 2.5.9 Tipografía premium — `src/app/sites/[slug]/layout.tsx` carga Playfair Display (display) + Inter (cuerpo) vía next/font, con fallbacks.
+- [x] 2.5.10 Rediseño `src/app/sites/[slug]/page.tsx`: barra sticky con CTA, hero con glows + curva SVG + rating con estrellas reales, highlights flotantes, sección "conócenos" con tarjeta de rating, servicios con hover-lift + barra de acento, catálogo, contacto con mapa embebido de Google (sin API key) + horarios, banda CTA final. Mobile-first. Personalización por giro conservada (color + emoji por rubro).
+- [x] 2.5.11 Validado: build + typecheck verde; ambos sitios de prueba renderizan 200; JSON-LD, llms.txt, robots.txt y sitemap verificados por curl.
 
 ### Fase 3 — Plantillas por giro
 > **Estado:** PENDIENTE
@@ -212,6 +244,19 @@
 - **Aplicar en:** Render de sitios (fase 2+).
 
 ---
+
+### 2026-08-31: Enlaces del sitio deben ser context-aware (subdominio vs /sites/{slug})
+- **Error potencial:** El middleware reescribe `{slug}.misitioia.com/x` → `/sites/{slug}/x` (deja header `x-site-slug`), pero la URL de prueba `misitioia.vercel.app/sites/{slug}` NO se reescribe. Un enlace fijo (`/terminos` o `/sites/{slug}/terminos`) funciona en un contexto y rompe en el otro.
+- **Fix:** `siteBasePath()` (`src/features/sites/base-path.ts`) lee `x-site-slug`: si está → base '' (subdominio); si no → base `/sites/{slug}` (URL de prueba). Todos los enlaces internos del sitio y legales usan esa base.
+- **Aplicar en:** Todo enlace interno dentro de `/sites/[slug]`.
+
+### 2026-08-31: JSON-LD y llms.txt NO se gatean por estado; meta robots y sitemap SÍ
+- **Decisión:** El gating anti-spam SEO (no indexar sitios sin reclamar) aplica SOLO a `meta robots` (noindex en `generado`) y al `sitemap` (excluye `generado`). El JSON-LD LocalBusiness y el `/llms.txt` describen un negocio real y se sirven siempre (ayudan a la IA a reconocer el negocio sin publicarlo en Google). `dado_de_baja` → RLS lo oculta → 404 en todo.
+- **Aplicar en:** AEO de sitios (fase 2.5+).
+
+### 2026-08-31: Fuentes premium por next/font en layout de /sites, no en el root
+- **Dato:** El root `layout.tsx` carga Inter global. Para el look premium de los sitios (Playfair Display display + Inter body) se creó `src/app/sites/[slug]/layout.tsx` con next/font exponiendo `--font-display`/`--font-body`. Las fuentes se aplican con `style={{fontFamily:'var(--font-display), serif'}}` (Tailwind v4, sin config extra).
+- **Aplicar en:** Render de sitios y páginas legales.
 
 ## 📦 Insumo externo reutilizable (agregado 31-ago-2026)
 

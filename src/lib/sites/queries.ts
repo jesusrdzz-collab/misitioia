@@ -60,3 +60,19 @@ export async function listPublishedSlugs(): Promise<string[]> {
     .neq('status', 'dado_de_baja')
   return (data ?? []).map((r) => (r as { slug: string }).slug)
 }
+
+/**
+ * Sitios indexables (reclamado/activo) para el sitemap de la plataforma.
+ * Los sitios 'generado' NO van al sitemap: no se publican en buscadores hasta
+ * que el dueño reclama su página (decisión de producto anti-spam SEO).
+ */
+export async function listIndexableSites(): Promise<
+  Array<{ slug: string; updated_at: string }>
+> {
+  const supabase = publicClient()
+  const { data } = await supabase
+    .from('sites')
+    .select('slug, updated_at')
+    .in('status', ['reclamado', 'activo'])
+  return (data ?? []) as Array<{ slug: string; updated_at: string }>
+}
