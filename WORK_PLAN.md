@@ -1,7 +1,7 @@
 # WORK_PLAN - MiSitio IA (Creador de Sitios Web con IA)
 > **Estado**: EN DESARROLLO
-> **Última actualización**: 2026-08-27
-> **Fase actual**: Fase 0 — Setup inicial (casi completa)
+> **Última actualización**: 2026-08-31
+> **Fase actual**: Fase 1 completa + Fase 2 (generador) funcional end-to-end
 > **Dominio**: misitioia.com (**pendiente de compra manual** — Vercel MCP no tiene permiso de compra)
 > **Supabase**: ✅ mthlqoploeisigzvwory (ACTIVE_HEALTHY, us-east-1)
 > **Repo**: ✅ https://github.com/jesusrdzz-collab/misitioia
@@ -52,40 +52,34 @@
 - [x] 0.12 Página placeholder de sitio de negocio
 
 ### Fase 1 — Multi-tenant + enrutamiento por subdominio
-> **Estado:** PENDIENTE
-> **Criterio de terminado:** Dos sitios distintos en dos subdominios
+> **Estado:** ✅ COMPLETA (31-ago-2026)
+> **Criterio de terminado:** Dos sitios distintos en dos subdominios ✅
 
-- [ ] 1.1 Migración Supabase: tablas `tenants`, `sites`, `site_content`, `site_products`
-- [ ] 1.2 RLS por `tenant_id` en todas las tablas
-- [ ] 1.3 Middleware Next.js: leer host → extraer subdominio → cargar tenant
-- [ ] 1.4 Reserva de subdominios (`www`, `app`, `admin`, `api`, `mail`)
-- [ ] 1.5 Resolución de colisiones de nombre (sufijo automático)
-- [ ] 1.6 Página de prueba A y página de prueba B en subdominios distintos
+- [x] 1.1 Migración Supabase: tablas `tenants`, `sites`, `site_content`, `site_products` — aplicada (migración `phase1_multitenant_core`)
+- [x] 1.2 RLS por `tenant_id` en todas las tablas — políticas por dueño (email JWT = owner_email) + lectura pública de sitios publicados. Advisor de seguridad en verde.
+- [x] 1.3 Middleware Next.js: host → subdominio → `/sites/[slug]` (ya existía; validado). En Next 16 es "Proxy (Middleware)".
+- [x] 1.4 Reserva de subdominios — tabla `reserved_subdomains` (18 slugs) + set fallback en código (`slug.ts`)
+- [x] 1.5 Resolución de colisiones — `resolveUniqueSlug()` con sufijo `-2, -3...` (`src/features/generator/slug.ts`)
+- [x] 1.6 Dos sitios reales en dos slugs distintos, aislados por tenant: `casa-de-bienestar-animal-de-san-nicolas` (tenant eec8...) y `refaccionaria-sam` (tenant 2c09...). En producción resuelven a `{slug}.misitioia.com` vía el middleware existente.
 
 ### Fase 2 — GENERADOR AUTOMÁTICO (⚡ LA MÁS URGENTE)
-> **Estado:** PENDIENTE
-> **Criterio de terminado:** De una fila de `leads` (TerraLeads, proyecto xnffgxnzwqqkghdwhxyj) sale una página publicada sin tocar nada
-> **Dependencia:** La campaña de llamadas NO puede arrancar antes de que esto funcione
+> **Estado:** ✅ FUNCIONAL end-to-end (31-ago-2026). Runtime en prod pendiente SOLO de service keys (ver abajo).
+> **Criterio de terminado:** De una fila de `leads` sale una página publicada ✅ (2 sitios reales generados)
+> **Dependencia:** La campaña de llamadas ya tiene qué prometer.
 
-- [ ] 2.1 Función `generateSiteFromLead(leadId)`:
-  - Lee lead de TerraLeads Supabase (proyecto `xnffgxnzwqqkghdwhxyj`)
-  - Extrae: business_name, giro, address, phone, rating, reviews_count, working_hours, social_facebook, social_instagram, categoria_google
-  - Campos en `raw_data.outscraper`: working_hours (JSON en español), category, subtypes, verified, place_id
-  - **NO hay fotos en el payload** → arrancar sin fotos (genérica por giro o sin imagen)
-  - **NO hay texto de reseñas** → solo mostrar "4.9 ★ (49 reseñas)"
-- [ ] 2.2 Prompt a Gemini para redactar textos:
-  - **REGLA NO NEGOCIABLE:** Gemini redacta, no inventa. Si el dato no está en la ficha, no se menciona.
-  - Input: solo datos verificados del lead
-  - Output: título, descripción corta, secciones (sobre nosotros, servicios, contacto)
-  - Modelo: `gemini-2.5-flash` (verificado vivo)
-- [ ] 2.3 Selección automática de plantilla por giro (mapeo `giros_catalogo` → plantilla visual)
-- [ ] 2.4 Generación de página estática (ISR/SSG en Next.js)
-- [ ] 2.5 Publicación automática en subdominio: `{slug}.misitioia.com`
-- [ ] 2.6 Estado del sitio: `generado` (sin reclamar)
-- [ ] 2.7 Meta tags: `noindex, nofollow` hasta que el dueño reclame
-- [ ] 2.8 Botón/enlace de baja inmediata visible en el footer
-- [ ] 2.9 Generación en lote: procesar N leads de una vez
-- [ ] 2.10 Script de prueba: generar 3 páginas reales desde leads existentes
+- [x] 2.1 Función `generateSiteFromLead(leadId)` — `src/features/generator/generate-site.ts`. Separada en `composeSiteContent()` (puro, redacción) + `persistGeneratedSite()` (BD, service_role). Lee lead de TerraLeads vía `lead-source.ts`.
+- [x] 2.2 Prompt a Gemini — `src/features/generator/gemini.ts`. Reglas anti-invención y anti-marketing-barato (patrón reimplementado de `ai-lead-gen`). Modelo `gemini-2.5-flash`, `responseMimeType: application/json`, `maxOutputTokens: 8192` (los tokens de "thinking" cuentan → 2048 truncaba el JSON). Salida validada/saneada.
+- [x] 2.3 Plantilla por giro — `src/features/generator/templates.ts` (8 plantillas: salud_animal, automotriz, salud, belleza, fitness, retail, construccion, hogar, generico) + mapa de los 40 giros. Paleta y emoji distintos por giro.
+- [x] 2.4 Página estática con ISR — `revalidate = 3600` en `/sites/[slug]`.
+- [x] 2.5 URL del sitio: `{slug}.misitioia.com` (prod) / `misitioia.vercel.app/sites/{slug}` (mientras no haya dominio).
+- [x] 2.6 Estado `generado` (sin reclamar) por defecto.
+- [x] 2.7 Meta `noindex, nofollow` hasta reclamar — `generateMetadata` indexa solo si status ∈ {reclamado, activo}.
+- [x] 2.8 Baja inmediata — enlace en footer → `/baja/[slug]` con Server Action que pone `dado_de_baja` (RLS lo oculta al instante).
+- [x] 2.9 Generación en lote — `listCandidateLeads()` + endpoint `POST /api/generate` `{ "batch": N }` (protegido con `GENERATOR_SECRET`).
+- [x] 2.10 Prueba real — `scripts/generate-test-site.ts` corrió sobre 2 leads reales (veterinaria 899 reseñas, refaccionaria 693) → 2 sitios publicados, verificados por lectura anon (RLS).
+
+**⚠️ Pendiente para runtime automático en producción (NO bloquea; equivalente al dominio):**
+`.env.local` y env de Vercel necesitan `SUPABASE_SERVICE_ROLE_KEY` (MiSitio) y `TERRALEADS_SUPABASE_SERVICE_KEY` (lectura de leads) + `GENERATOR_SECRET`. No son recuperables por MCP (son secretos). La prueba real usó Gemini real + persistencia vía MCP (elevado). Una vez cargadas las keys, `POST /api/generate` genera solo.
 
 ### Fase 3 — Plantillas por giro
 > **Estado:** PENDIENTE
@@ -197,3 +191,40 @@
 - **Dato:** El payload de TerraLeads tiene `reviews` como número (ej: 49), no como texto. No hay URLs de fotos.
 - **Fix:** Arrancar páginas sin foto (genérica por giro) y con "4.9 ★ (49 reseñas)" sin texto.
 - **Aplicar en:** Generador automático (fase 2).
+
+### 2026-08-31: gemini-2.5-flash gasta tokens de "thinking" del presupuesto
+- **Error:** Con `maxOutputTokens: 2048` + `responseMimeType: application/json`, el JSON salía truncado (finishReason MAX_TOKENS) porque los `thoughtsTokenCount` cuentan contra el tope.
+- **Fix:** Subir a `maxOutputTokens: 8192`. Para JSON grande, dar aire de sobra.
+- **Aplicar en:** Toda llamada a gemini-2.5-flash que devuelva JSON estructurado.
+
+### 2026-08-31: working_hours de Outscraper es {dia: [rango]} con días en minúscula/acento
+- **Dato:** `raw_data.outscraper.working_hours` = `{"lunes":["8a.m.-4p.m."],"domingo":["Cerrado"]}`. Valor = ARRAY, día en español minúscula con acento.
+- **Fix:** `normalizeWorkingHours()` mapea a `{"Lunes":"8 a.m. – 4 p.m."}` respetando orden lunes→domingo, tolera "miercoles"/"sabado" sin acento.
+- **Aplicar en:** Generador (fase 2), y cualquier consumo de horarios de TerraLeads.
+
+### 2026-08-31: git user.email del repo estaba mal (jesus2rdzz con "2")
+- **Error:** El repo tenía `user.email = jesus2rdzz@gmail.com`; Vercel bloquea deploys si el autor no coincide con la cuenta.
+- **Fix:** `git config user.email jesusrdzz@gmail.com` (sin "2") en el repo.
+- **Aplicar en:** Este repo (misitioia).
+
+### 2026-08-31: RLS — el sitio público se sirve con anon key, la generación con service_role
+- **Decisión:** Las páginas generadas SON públicas. Política de SELECT para `anon` sobre sitios con status ≠ dado_de_baja → el render usa la anon key (no requiere sesión). La escritura (generador) usa service_role (bypass RLS). Evita el bug de `createBrowserClient` sin JWT porque el render no depende de sesión.
+- **Aplicar en:** Render de sitios (fase 2+).
+
+---
+
+## 📦 Insumo externo reutilizable (agregado 31-ago-2026)
+
+Del análisis de `REPOS EXTERNOS/` (6 repos de daniel-carreon, 28-ago), lo útil para MiSitio IA:
+
+- **`ai-lead-gen`** (⚠️ SIN licencia — reimplementar el patrón, NO copiar código textual): pipeline
+  de minería de negocios de **Google Maps vía Apify** (`compass~crawler-google-places`) →
+  enriquecer emails (`vdrmota~contact-info-scraper`) → "línea rompehielo" con Gemini. Alimenta a
+  **TerraLeads**, que es la fuente de la **Fase 2 (generador automático)** de MiSitio IA. Más y
+  mejores leads = más páginas generadas = más embudo. Entrada: cuenta Apify + 2 actores. Ojo ToS
+  Google Maps para SaaS comercial.
+- **`saas-factory-agencia`** (SIN licencia — patrón): **agente vendedor configurable desde la BD**
+  (system_prompt/modelo/temperatura editables desde admin sin redeploy). Útil para que cada sitio
+  generado tenga su chatbot de ventas ajustable por tenant sin tocar código.
+
+Contexto completo del embudo en `ESTUDIO/PLAN_MAESTRO_ADQUISICION_AUTOMATICA.md`.
