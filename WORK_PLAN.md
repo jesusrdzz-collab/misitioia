@@ -273,3 +273,87 @@ Del análisis de `REPOS EXTERNOS/` (6 repos de daniel-carreon, 28-ago), lo útil
   generado tenga su chatbot de ventas ajustable por tenant sin tocar código.
 
 Contexto completo del embudo en `ESTUDIO/PLAN_MAESTRO_ADQUISICION_AUTOMATICA.md`.
+
+---
+
+## Fase 7 — Sitio público del producto (cara pública de MiSitio IA)
+> **Estado:** ✅ COMPLETA (31-ago-2026) · rama `feat/sitio-publico-producto` (worktree aislado, sin merge a main)
+> **Criterio de terminado:** Landing premium + legales del producto + museo de comparativas + AEO + imágenes + PWA. `npm run build` y `typecheck` en verde.
+> **Dominio de producción:** `misitio.site` (canónicas y AEO usan `NEXT_PUBLIC_ROOT_DOMAIN`, default cambiado a `misitio.site`).
+
+Construida la **cara pública del PRODUCTO** en las rutas raíz, sin tocar `/sites/[slug]`
+(los sitios generados de la Fase 2.5), ni el middleware/proxy, ni el editor.
+
+**Posicionamiento "Caballo de Troya":** todo el copy insiste en que el sitio gratis es el gancho
+y el valor real es Victoria (IA que atiende/vende 24/7 + videollamada). "Los demás te dan una
+página estática; nosotros una que vende sola." Español mexicano, cálido y profesional.
+
+### 7.1 Landing `/` (rediseño premium)
+- [x] `src/app/page.tsx` reescrita: hero con imagen IA + glows, "cómo funciona" (3 pasos), sección
+  Victoria (fondo oscuro), features (6), teaser de comparativas, prueba social (stats), pricing
+  **$0 / $349 / $699 MXN**, FAQ (acordeón `<details>` nativo, sin JS), CTA final. Mobile-first.
+  Tipografía Playfair Display (display) + Inter (cuerpo).
+- [x] Componentes en `src/features/marketing/`: `brand.ts` (fuente única de precios/enlaces),
+  `components/SiteNav.tsx`, `components/SiteFooter.tsx`, `components/Pricing.tsx`,
+  `data/faq.ts` (FAQ compartida landing + JSON-LD).
+
+### 7.2 Páginas legales del producto
+- [x] `src/features/marketing/legal/product-legal.ts` — Aviso de Privacidad (LFPDPPP), Términos y
+  Política de Cookies del **producto** (MiSitio IA como empresa; distinto del generador legal de
+  los sitios). `LegalArticle.tsx` para render.
+- [x] Rutas: `/aviso-de-privacidad`, `/terminos`, `/cookies` + **alias** `/privacy` y `/terms`
+  (requisito fábrica; canónica de los alias apunta a la versión en español). Enlazadas en el footer.
+
+### 7.3 Museo de comparativas
+- [x] `src/features/comparativa/competitors.ts` — **8 competidores**: Wix, Hostinger AI, Base44,
+  Durable, GoDaddy Airo, Framer, Squarespace, agencia/freelancer tradicional. Cada uno abre con un
+  **dolor único y específico** de ESE competidor (no genérico). Tabla factual y honesta (9 filas,
+  reconoce lo bueno de cada uno; NO inventa cifras ni copia contenido). Cierre con diferencial
+  (sitio + Victoria + videollamada).
+- [x] Rutas `/comparativa` (índice) + `/comparativa/[slug]` (SSG, `generateStaticParams`).
+  JSON-LD `FAQPage` + `BreadcrumbList` + `ItemList`, meta por comparativa.
+
+### 7.4 AEO (stack de la fábrica)
+- [x] `robots.ts` (ya existía) — default de dominio → `misitio.site`; permite bots IA (GPTBot,
+  OAI-SearchBot, ChatGPT-User, ClaudeBot, PerplexityBot, Google-Extended, Applebot-Extended, CCBot,
+  cohere-ai, Amazonbot, Meta-ExternalAgent, +extras).
+- [x] `sitemap.ts` — ahora incluye **landing + legales + comparativas** (producto SÍ se indexa),
+  además de los sitios reclamados/activos. Listado de sitios envuelto en try/catch (build no truena
+  si Supabase no está disponible).
+- [x] `/llms.txt` del producto — `src/app/llms.txt/route.ts` (qué es, diferencial, planes, FAQ,
+  comparativas).
+- [x] JSON-LD `Organization` + `SoftwareApplication` + `FAQPage` en la landing
+  (`src/features/marketing/structured-data.ts`).
+- [x] `meta robots` del producto: `index,follow` + `max-snippet:-1, max-image-preview:large,
+  max-video-preview:-1` en el root layout. Canónicas con `https://misitio.site`.
+
+### 7.5 Imágenes de calidad (generadas con Replicate/Flux)
+- [x] `scripts/generate-marketing-images.mjs` (lee `REPLICATE_API_TOKEN` de env; no hardcodea token).
+  **6 imágenes** webp en `public/img/`: `hero`, `og-image`, `feature-victoria`, `feature-generate`,
+  `showcase-devices`, `comparativa-hero`. Estilo cálido, negocios mexicanos, mockups en celular.
+  Modelo `black-forest-labs/flux-dev`, output webp optimizado.
+
+### 7.6 PWA (requisito fábrica)
+- [x] `src/app/manifest.ts` (Next metadata route → `/manifest.webmanifest`), `display: standalone`,
+  `theme_color #ea580c`.
+- [x] `scripts/generate-icons.mjs` (sharp) → `public/icon-192.png`, `icon-512.png`,
+  `apple-touch-icon.png`, `favicon.png`. Icono de marca: ventana de sitio + burbuja de chat.
+- [x] Metadata en `layout.tsx`: `manifest`, `icons`, `appleWebApp`, `themeColor` (viewport).
+
+### Archivos compartidos tocados (para el merge — mínimos)
+- `src/app/layout.tsx` — fuentes (Playfair+Inter), metadata/PWA/icons, `metadataBase` → `misitio.site`.
+- `src/app/globals.css` — body usa Inter; removido el override forzado de dark-mode (evita fondos
+  oscuros inesperados en el producto). No afecta `/sites` (tienen su propio wrapper de estilos).
+- `src/app/robots.ts` y `src/app/sitemap.ts` — default de dominio → `misitio.site`; sitemap suma
+  rutas del producto y vuelve resiliente el listado de sitios.
+- `src/app/page.tsx` — reemplazada (era la landing básica).
+- `package.json` / `package-lock.json` — agregado `sharp` (usado por el script de iconos; también
+  lo aprovecha Next para optimización de imágenes).
+
+### Verificación
+- [x] `npm run typecheck` verde. `npm run build` verde (23 rutas; `/sites/*` intacto).
+- [x] Todas las rutas del producto responden 200 (landing, legales, alias, comparativa índice + 8
+  slugs, llms.txt, manifest, robots, sitemap). Imágenes e iconos sirven 200.
+- Nota: en este worktree no hay `.env.local`; el middleware requiere `NEXT_PUBLIC_SUPABASE_URL/ANON`
+  para no arrojar 500. Para verificación local se usó un `.env.local` con placeholders (gitignored,
+  ya removido). En Vercel las env reales ya existen.
