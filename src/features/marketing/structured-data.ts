@@ -43,9 +43,9 @@ export function softwareApplicationJsonLd() {
       '@type': 'Offer',
       name: p.label,
       price: p.price.replace(/[^0-9]/g, '') || '0',
-      priceCurrency: 'MXN',
+      priceCurrency: 'USD',
       description: p.tagline,
-      category: p.id === 'gratis' ? 'free' : 'subscription',
+      category: p.id === 'free' ? 'free' : 'subscription',
     })),
     aggregateRating: undefined,
   }

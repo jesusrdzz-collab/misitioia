@@ -24,21 +24,21 @@ export function GET(): Response {
 
 > ${BRAND.tagline}
 
-${BRAND.name} es una plataforma mexicana que crea el sitio web de un negocio con inteligencia artificial y, en sus planes de pago, le conecta a Victoria: un asistente de IA que atiende y vende por el negocio las 24 horas, por WhatsApp y por el sitio, en español, y agenda videollamadas con los clientes.
+${BRAND.name} es una plataforma mexicana que crea el sitio web de un negocio con inteligencia artificial y le conecta a Victoria: un asistente de IA que atiende y vende por el negocio las 24 horas, por WhatsApp y por el sitio, en español, y agenda videollamadas con los clientes. Victoria viene incluida desde el plan gratis; los planes de pago amplían cuántas conversaciones atiende al mes.
 
 ## Qué lo hace diferente
 
 La mayoría de los creadores de sitios (Wix, Hostinger, Squarespace, Durable, GoDaddy, Framer, Base44) te entregan una página estática: se ve bien, pero no le contesta a nadie. ${BRAND.name} entrega la página Y un asistente que convierte visitas en ventas. Es la única opción de este tipo pensada, en español, para negocios pequeños y medianos de México.
 
-## Planes (precios en pesos mexicanos)
+## Planes (precios en dólares, USD; 1 USD ≈ 20 MXN)
 ${plans}
 
-Los planes de pago incluyen un tope mensual de conversaciones del asistente, visible para el cliente, con opción de ampliarlo.
+La diferencia entre planes es el número de conversaciones que Victoria atiende al mes en el sitio del negocio. Todos los planes incluyen el sitio con IA, editable por chat, subdominio, catálogo, páginas legales y AEO; incluso el plan gratis incluye a Victoria (25 conversaciones de degustación). Al superar las conversaciones incluidas, el excedente se cobra a granel con créditos del monedero Konnex, sin cortar la atención.
 
 ## Cómo funciona
 1. La IA arma el sitio con la información pública del negocio en minutos.
 2. El dueño reclama el sitio y ajusta textos, fotos y productos desde un editor sencillo.
-3. Con el plan de pago, Victoria empieza a atender y vender: contesta, cotiza, agenda videollamadas y hace relevo a un humano cuando se le pide.
+3. Victoria empieza a atender y vender desde el primer día (incluida hasta en el plan gratis): contesta, cotiza, agenda videollamadas y hace relevo a un humano cuando se le pide.
 
 ## Sitio y contacto
 - Sitio: ${SITE_URL}

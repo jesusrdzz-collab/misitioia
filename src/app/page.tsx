@@ -16,7 +16,7 @@ import {
 export const metadata: Metadata = {
   title: 'MiSitio IA — Tu página web con un asistente que vende solo',
   description:
-    'Creamos la página web de tu negocio con IA, gratis. Y en el plan de pago le conectamos a Victoria: atiende y vende por ti 24/7 por WhatsApp y web, y agenda videollamadas. La única web que además convierte.',
+    'Creamos la página web de tu negocio con IA, gratis, con Victoria incluida: atiende y vende por ti 24/7 por WhatsApp y web, y agenda videollamadas. Los planes de pago amplían cuántas conversaciones atiende al mes. La única web que además convierte.',
   alternates: { canonical: SITE_URL },
   openGraph: {
     title: 'MiSitio IA — La página web que además vende sola',
@@ -198,7 +198,7 @@ export default function HomePage() {
             </div>
             <div className="order-1 md:order-2">
               <div className="inline-flex items-center gap-2 rounded-full border border-orange-400/30 bg-orange-500/10 px-3 py-1 text-sm font-medium text-orange-300">
-                ✨ Incluido desde el Nivel 2
+                ✨ Incluida hasta en el plan gratis
               </div>
               <h2
                 className="mt-5 text-3xl font-bold leading-tight md:text-5xl"
@@ -217,7 +217,7 @@ export default function HomePage() {
                   ['🕐', 'Atiende 24/7', 'Ni un mensaje sin respuesta, ni de madrugada ni en domingo.'],
                   ['🎥', 'Agenda videollamadas', 'Coordina reuniones por video con tus clientes automáticamente.'],
                   ['🤝', 'Relevo humano', 'Cuando quieras, tomas la conversación tú mismo. Victoria se hace a un lado.'],
-                  ['📲', 'También en tu WhatsApp', 'En el Nivel 3, Victoria contesta también desde tu número.'],
+                  ['📲', 'También en tu WhatsApp', 'Victoria también puede contestar desde tu número de WhatsApp.'],
                 ].map(([e, t, d]) => (
                   <li key={t} className="flex items-start gap-4">
                     <span className="text-2xl">{e}</span>
@@ -229,7 +229,7 @@ export default function HomePage() {
                 ))}
               </ul>
               <Link
-                href="/crear?plan=nivel_2"
+                href="/crear?plan=emprende"
                 className="mt-9 inline-block rounded-xl bg-orange-600 px-8 py-4 font-semibold text-white transition-colors hover:bg-orange-700"
               >
                 Quiero a Victoria vendiendo por mí →
@@ -316,15 +316,16 @@ export default function HomePage() {
                 Empieza gratis. Crece cuando lo necesites.
               </h2>
               <p className="mx-auto mt-4 max-w-xl text-stone-500">
-                Sin letra chiquita. Sin permanencia. La mitad de lo que cobra la agencia más barata.
+                Sin letra chiquita. Sin permanencia. Empieza gratis con Victoria incluida y sube solo cuando la ocupes.
               </p>
             </div>
             <div className="mt-14">
               <Pricing />
             </div>
             <p className="mx-auto mt-8 max-w-2xl text-center text-sm text-stone-500">
-              Los planes de pago incluyen un tope mensual de conversaciones de Victoria, visible en
-              todo momento, con opción de ampliarlo cuando tu negocio lo pida.
+              La diferencia entre planes es cuántas conversaciones atiende Victoria al mes. Si se te
+              acaban, sigues con créditos del monedero Konnex, sin cortar la venta. Precios en USD
+              (aprox. en pesos, 1 USD ≈ 20 MXN).
             </p>
           </div>
         </section>

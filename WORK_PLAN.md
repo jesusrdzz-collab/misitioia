@@ -2,6 +2,7 @@
 > **Estado**: EN DESARROLLO
 > **Última actualización**: 2026-08-31
 > **Fase actual**: Fase 4 (editor tipo chat) EN PROGRESO — v1 funcional del loop chat→IA→edición→preview
+> **Planes (landing, actualizado 31-ago-2026)**: modelo nuevo en USD — Free $0 (25 conv Victoria) · Emprende $10 (100) · Crece $25 (400, destacado) · Pro $50 (1,000). Diferenciador = nº de conversaciones/mes; excedente a granel con créditos Konnex. Fuente: `ESTUDIO/PLANES_Y_CREDITOS_MISITIO_IA_2026-08-31.md` (en `PROYECTOS/ESTUDIO/`). Reemplaza los viejos $0/$349/$699 MXN.
 > **Dominio**: **misitio.site** (comprado vía Vercel, conectándose por Jesús). Subdominios `negocio.misitio.site`, panel `app.misitio.site`. Configurable por env `NEXT_PUBLIC_ROOT_DOMAIN` (default `misitio.site`, ver `src/lib/domain.ts`). ⚠️ Falta poner `NEXT_PUBLIC_ROOT_DOMAIN=misitio.site` en el env de Vercel.
 > **Supabase**: ✅ mthlqoploeisigzvwory (ACTIVE_HEALTHY, us-east-1)
 > **Repo**: ✅ https://github.com/jesusrdzz-collab/misitioia

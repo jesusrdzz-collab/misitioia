@@ -18,11 +18,20 @@ export const BRAND = {
 } as const
 
 export interface Plan {
-  id: 'gratis' | 'nivel_2' | 'nivel_3'
+  id: 'free' | 'emprende' | 'crece' | 'pro'
   label: string
+  /** Precio en USD, ej. '$0', '$10'. */
   price: string
+  /** Ej. 'para siempre' | 'al mes'. */
   priceNote: string
+  /** Moneda mostrada junto al precio (los de pago = 'USD'). */
   currency?: string
+  /** Aproximado en pesos, ej. '≈ $200 MXN/mes'. */
+  priceApprox?: string
+  /** Conversaciones de Victoria incluidas al mes (el diferenciador entre planes). */
+  conversations: string
+  /** Etiqueta opcional bajo las conversaciones, ej. 'degustación'. */
+  conversationsTag?: string
   highlight?: boolean
   badge?: string
   tagline: string
@@ -31,61 +40,87 @@ export interface Plan {
   href: string
 }
 
+/**
+ * Planes MiSitio IA (modelo 31-ago-2026).
+ *
+ * El diferenciador entre planes = nº de conversaciones que Victoria atiende al
+ * mes en el sitio del cliente. Todos incluyen el sitio con IA, editable por
+ * chat, subdominio, catálogo, páginas legales y AEO. Las conversaciones extra
+ * se cobran a granel con créditos del monedero Konnex.
+ * Ancla: ESTUDIO/PLANES_Y_CREDITOS_MISITIO_IA_2026-08-31.md
+ */
 export const PLANS: Plan[] = [
   {
-    id: 'gratis',
-    label: 'Gratis',
+    id: 'free',
+    label: 'Free',
     price: '$0',
     priceNote: 'para siempre',
-    tagline: 'Tu negocio, en línea hoy mismo.',
+    conversations: '25',
+    conversationsTag: 'degustación',
+    tagline: 'Tu sitio y Victoria, sin pagar nada.',
     features: [
-      { text: 'Página web profesional con tu información' },
+      { text: 'Victoria atiende y agenda videollamadas 24/7', strong: true, star: true },
+      { text: 'Sitio web con IA, editable por chat' },
       { text: 'Subdominio tunegocio.misitio.site' },
       { text: 'Catálogo de productos o servicios' },
-      { text: 'Edición básica de contenido' },
-      { text: 'Optimizada para Google y celular' },
+      { text: 'Páginas legales y optimización para Google e IA (AEO)' },
     ],
     cta: 'Empezar gratis',
     href: '/crear',
   },
   {
-    id: 'nivel_2',
-    label: 'Nivel 2',
-    price: '$349',
-    priceNote: 'por mes',
-    currency: 'MXN',
-    highlight: true,
-    badge: 'EL QUE VENDE SOLO',
-    tagline: 'Victoria contesta y vende por ti, 24/7.',
+    id: 'emprende',
+    label: 'Emprende',
+    price: '$10',
+    priceNote: 'al mes',
+    currency: 'USD',
+    priceApprox: '≈ $200 MXN/mes',
+    conversations: '100',
+    tagline: 'Para el negocio que ya recibe clientes.',
     features: [
-      { text: 'Todo lo del plan gratis' },
-      { text: 'Victoria: asistente de IA que atiende y vende 24/7', strong: true, star: true },
-      { text: 'Agenda videollamadas con tus clientes', strong: true, star: true },
-      { text: 'Chat en vivo con relevo humano cuando quieras', star: true },
-      { text: 'CRM: ve quién te escribió y qué pidió', star: true },
-      { text: 'Editor autoservicio · sin nuestra marca', star: true },
+      { text: 'Todo lo del plan Free', strong: true },
+      { text: 'Victoria atiende y agenda videollamadas 24/7', star: true },
+      { text: '¿Se acaban? Sigues con créditos Konnex', star: true },
     ],
-    cta: 'Activar Nivel 2',
-    href: '/crear?plan=nivel_2',
+    cta: 'Activar Emprende',
+    href: '/crear?plan=emprende',
   },
   {
-    id: 'nivel_3',
-    label: 'Nivel 3',
-    price: '$699',
-    priceNote: 'por mes',
-    currency: 'MXN',
-    badge: 'TODO CONECTADO',
-    tagline: 'Tu dominio propio y WhatsApp con IA.',
+    id: 'crece',
+    label: 'Crece',
+    price: '$25',
+    priceNote: 'al mes',
+    currency: 'USD',
+    priceApprox: '≈ $500 MXN/mes',
+    conversations: '400',
+    highlight: true,
+    badge: 'EL MÁS POPULAR',
+    tagline: 'Para el negocio con flujo constante.',
     features: [
-      { text: 'Todo lo del Nivel 2' },
-      { text: 'Dominio propio (tunegocio.com)', strong: true, star: true },
-      { text: 'WhatsApp conectado con Victoria', strong: true, star: true },
-      { text: 'Analítica de conversaciones y ventas', star: true },
-      { text: 'Más conversaciones incluidas', star: true },
+      { text: 'Todo lo del plan Emprende', strong: true },
+      { text: 'Mejor precio por conversación', star: true },
+      { text: '¿Se acaban? Sigues con créditos Konnex', star: true },
+    ],
+    cta: 'Activar Crece',
+    href: '/crear?plan=crece',
+  },
+  {
+    id: 'pro',
+    label: 'Pro',
+    price: '$50',
+    priceNote: 'al mes',
+    currency: 'USD',
+    priceApprox: '≈ $1,000 MXN/mes',
+    conversations: '1,000',
+    badge: 'MÁXIMO ALCANCE',
+    tagline: 'Para el negocio que vende a todo volumen.',
+    features: [
+      { text: 'Todo lo del plan Crece', strong: true },
+      { text: 'El mejor precio por conversación', star: true },
       { text: 'Soporte prioritario', star: true },
     ],
-    cta: 'Activar Nivel 3',
-    href: '/crear?plan=nivel_3',
+    cta: 'Activar Pro',
+    href: '/crear?plan=pro',
   },
 ]
 
