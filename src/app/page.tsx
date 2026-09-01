@@ -208,6 +208,66 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* PRUEBA TÚ MISMO */}
+        <section className="px-4 py-20">
+          <div className="mx-auto max-w-4xl overflow-hidden rounded-[2rem] border border-stone-800 bg-stone-950 px-6 py-14 text-white shadow-2xl shadow-stone-400/30 md:px-14">
+            <div className="text-center">
+              <p className="text-sm font-semibold uppercase tracking-wider text-orange-400">La prueba honesta</p>
+              <h2
+                className="mx-auto mt-3 max-w-2xl text-3xl font-bold leading-tight md:text-4xl"
+                style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
+              >
+                ¿No nos crees? Compruébalo con tu negocio ahora mismo.
+              </h2>
+              <p className="mx-auto mt-4 max-w-xl text-stone-300">
+                Toma 30 segundos. Es la prueba más honesta que te podemos recomendar.
+              </p>
+            </div>
+
+            <div className="mx-auto mt-10 max-w-xl rounded-2xl border border-stone-700 bg-stone-900 p-5">
+              <div className="flex items-center gap-2 text-xs text-stone-500">
+                <span className="h-2.5 w-2.5 rounded-full bg-green-400" />
+                Tú, en ChatGPT o Gemini
+              </div>
+              <p className="mt-3 text-lg text-stone-100">
+                “¿Dónde compro <span className="text-orange-400">[lo que tú vendes]</span> al mejor precio en <span className="text-orange-400">[tu ciudad]</span>?”
+              </p>
+            </div>
+
+            <div className="mx-auto mt-8 grid max-w-2xl gap-4 sm:grid-cols-3">
+              {[
+                { n: '1', t: 'Abre ChatGPT o Gemini', d: 'En tu celular, ahora mismo.' },
+                { n: '2', t: 'Pregunta como cliente', d: 'Por un producto que tú vendes, en tu ciudad.' },
+                { n: '3', t: 'Mira quién aparece', d: '¿Estás tú… o solo tu competencia?' },
+              ].map((s) => (
+                <div key={s.n} className="rounded-2xl border border-stone-800 bg-stone-900/60 p-5 text-center">
+                  <div className="mx-auto flex h-8 w-8 items-center justify-center rounded-full bg-orange-600 text-sm font-bold">
+                    {s.n}
+                  </div>
+                  <h3 className="mt-3 text-sm font-semibold text-white">{s.t}</h3>
+                  <p className="mt-1 text-sm text-stone-400">{s.d}</p>
+                </div>
+              ))}
+            </div>
+
+            <p className="mx-auto mt-10 max-w-2xl text-center text-lg text-stone-200">
+              Si no apareces, no es que no existas: eres{' '}
+              <span className="font-semibold text-orange-400">invisible para la IA</span>. Y en ese
+              momento, alguien que quería comprarte le está comprando a quien la IA sí recomendó.{' '}
+              <span className="font-semibold text-white">MiSitio IA te hace aparecer.</span>
+            </p>
+
+            <div className="mt-9 text-center">
+              <Link
+                href="/crear"
+                className="inline-block rounded-xl bg-orange-600 px-8 py-4 text-lg font-semibold text-white shadow-lg shadow-orange-900/40 transition-colors hover:bg-orange-500"
+              >
+                Crear mi sitio gratis →
+              </Link>
+            </div>
+          </div>
+        </section>
+
         {/* GRATIS + FÁCIL */}
         <section id="gratis" className="bg-white px-4 py-20">
           <div className="mx-auto grid max-w-6xl items-center gap-14 md:grid-cols-2">
