@@ -134,6 +134,15 @@ export function EditorWorkspace({ mode, initialSiteId, initialSlug, businessName
           {slug && <span className="hidden sm:inline text-xs text-gray-400">{slug}.{ROOT_DOMAIN}</span>}
         </div>
         <div className="flex items-center gap-2">
+          {siteId && (
+            <a
+              href={`/editar/datos?site=${siteId}`}
+              className="text-sm font-medium text-gray-600 hover:text-blue-600"
+              title="Abrir el panel (datos de Victoria, dominio, plan)"
+            >
+              Panel
+            </a>
+          )}
           {slug && (
             <a
               href={`/sites/${slug}`}
