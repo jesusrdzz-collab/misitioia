@@ -4,6 +4,7 @@ import { authorizeSiteAccess, listSitesForOwner } from '@/features/editor/author
 import { EditorWorkspace } from '@/features/editor/components/EditorWorkspace'
 import { LoginGate } from '@/features/editor/components/LoginGate'
 import { ClaimForm } from '@/features/editor/components/ClaimForm'
+import { LogoMark } from '@/features/marketing/components/Logo'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Editar mi sitio — MiSitio IA', robots: { index: false } }
@@ -97,7 +98,7 @@ function SelectorShell({ email, children }: { email: string; children: React.Rea
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-5 py-10">
       <div className="w-full max-w-md">
         <div className="text-center mb-6">
-          <div className="text-3xl mb-2">🛠️</div>
+          <LogoMark className="mx-auto h-12 w-12 mb-2" />
           <p className="text-sm text-gray-400">Sesión: {email}</p>
         </div>
         <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8">{children}</div>

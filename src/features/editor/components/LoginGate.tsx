@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { sendMagicLink } from '../actions'
+import { LogoLockup } from '@/features/marketing/components/Logo'
 
 /**
  * Puerta de entrada por magic link. El dueño escribe su correo y recibe un
@@ -27,10 +28,10 @@ export function LoginGate({ next, title }: { next: string; title: string }) {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-5">
       <div className="w-full max-w-md bg-white rounded-3xl shadow-xl border border-gray-100 p-8">
         <div className="text-center mb-6">
-          <div className="text-4xl mb-3">🪄</div>
+          <LogoLockup className="mx-auto h-20 w-auto mb-4" />
           <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
           <p className="text-gray-500 mt-2 text-sm">
-            Te mandamos un enlace mágico a tu correo. Sin contraseñas.
+            Entra con Google o con un enlace mágico a tu correo. Sin contraseñas.
           </p>
         </div>
 
