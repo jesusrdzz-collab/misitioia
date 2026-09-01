@@ -1,7 +1,16 @@
 # WORK_PLAN - MiSitio IA (Creador de Sitios Web con IA)
 > **Estado**: EN DESARROLLO
-> **Última actualización**: 2026-08-31
-> **Fase actual**: Fase 8 (plugin/embed para sitios que YA existen) ✅ MVP funcional — snippet universal + Victoria embebida + auditoría AEO + /instalar + plugin WordPress
+> **Última actualización**: 2026-09-01
+> **Fase actual**: Fase 9 — lanzamiento y monetización (logo oficial + login Google en prod + panel del cliente + Stripe)
+>
+> ✅ **SESIÓN 1-sep-2026 (grande):**
+> - **Logo oficial** (hexágono MS) en nav, login (lockup), selector e íconos PWA/favicon — desplegado.
+> - **Login con Google EN PRODUCCIÓN**: OAuth client + consent publicado (Search Console verificado) + provider Supabase. **Custom Domain `auth.misitio.site`** activo → el login ya NO muestra `supabase.co` (memoria `supabase-login-dominio-propio`). `NEXT_PUBLIC_SUPABASE_URL` apunta al dominio propio.
+> - **Runtime encendido**: `GEMINI_API_KEY` + `SUPABASE_SERVICE_ROLE_KEY` en Vercel (la service_role se había corrompido al pegar por Chrome → 401 en la creación; corregida por API. Memoria `vercel-secret-paste-chrome-corrupts`). **Creación de sitios funcionando.**
+> - **Panel del cliente** (menú lateral): Mi sitio · Datos de Victoria (contacto/horarios/servicios/catálogo con precios) · Instalar · Conectar dominio · Mi plan. Desplegado.
+> - **Stripe billing** (test): `/api/stripe/checkout|webhook|portal` + PlanPanel; BD migrada a 4 planes + columnas de suscripción; webhook registrado. Falta prueba de cobro de Jesús + pasar a LIVE (tarea #098).
+> - **Pendientes derivados**: Victoria en el sitio hospedado + metering vía Konnex (#099, ver memoria `victoria-kb-en-konnex`), dominio-cliente automático (#100), unificar planes/SMTP (#101).
+> **Fase 8 (previa)**: plugin/embed para sitios que YA existen ✅ MVP funcional — snippet universal + Victoria embebida + auditoría AEO + /instalar + plugin WordPress
 > **Planes (landing, actualizado 31-ago-2026)**: modelo nuevo en USD — Free $0 (25 conv Victoria) · Emprende $10 (100) · Crece $25 (400, destacado) · Pro $50 (1,000). Diferenciador = nº de conversaciones/mes; excedente a granel con créditos Konnex. Fuente: `ESTUDIO/PLANES_Y_CREDITOS_MISITIO_IA_2026-08-31.md` (en `PROYECTOS/ESTUDIO/`). Reemplaza los viejos $0/$349/$699 MXN.
 > **Dominio**: **misitio.site** (comprado vía Vercel, conectándose por Jesús). Subdominios `negocio.misitio.site`, panel `app.misitio.site`. Configurable por env `NEXT_PUBLIC_ROOT_DOMAIN` (default `misitio.site`, ver `src/lib/domain.ts`). ⚠️ Falta poner `NEXT_PUBLIC_ROOT_DOMAIN=misitio.site` en el env de Vercel.
 > **Supabase**: ✅ mthlqoploeisigzvwory (ACTIVE_HEALTHY, us-east-1)
