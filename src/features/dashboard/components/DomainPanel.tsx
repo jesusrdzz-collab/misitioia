@@ -2,33 +2,97 @@
 
 import { useState, useTransition } from 'react'
 import { ROOT_DOMAIN } from '@/lib/domain'
-import { saveCustomDomain } from '../actions'
+import type { DomainStatus, DnsRecord } from '@/lib/vercel-domains'
+import { saveCustomDomain, refreshDomainStatus } from '../actions'
 
 /**
  * Panel "Conectar dominio":
  *  - Muestra el subdominio en vivo del negocio con botón para copiar.
  *  - Permite guardar un dominio propio (se valida y guarda en minúsculas).
- *  - Da las instrucciones DNS (CNAME → cname.vercel-dns.com).
+ *  - Adjunta el dominio al proyecto de Vercel y muestra el estado real de
+ *    verificación (Pendiente / Verificado) + los registros DNS exactos.
+ *  - Botón "Volver a verificar" que reconsulta el estado en Vercel.
  *
- * NO llama a ninguna API de Vercel: la conexión automática la termina soporte.
+ * Móvil-first, paleta azul. No importa el módulo de Vercel (solo tipos): toda
+ * la lógica con el token vive en Server Actions.
  */
 
 interface Props {
   siteId: string
   slug: string
   initialCustomDomain: string | null
+  initialStatus: DomainStatus | null
 }
 
-const CNAME_TARGET = 'cname.vercel-dns.com'
+const CNAME_TARGET_FALLBACK = 'cname.vercel-dns.com'
 
-export function DomainPanel({ siteId, slug, initialCustomDomain }: Props) {
+function StatusBadge({ status }: { status: DomainStatus }) {
+  if (status.state === 'verificado') {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-green-50 border border-green-200 px-3 py-1 text-xs font-semibold text-green-700">
+        <span className="h-1.5 w-1.5 rounded-full bg-green-500" aria-hidden />
+        Verificado
+      </span>
+    )
+  }
+  if (status.state === 'pendiente') {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-200 px-3 py-1 text-xs font-semibold text-amber-700">
+        <span className="h-1.5 w-1.5 rounded-full bg-amber-500" aria-hidden />
+        Pendiente
+      </span>
+    )
+  }
+  if (status.state === 'error') {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-red-50 border border-red-200 px-3 py-1 text-xs font-semibold text-red-700">
+        Error al verificar
+      </span>
+    )
+  }
+  // no-configurado
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-50 border border-gray-200 px-3 py-1 text-xs font-semibold text-gray-600">
+      Conexión manual
+    </span>
+  )
+}
+
+function DnsTable({ records }: { records: DnsRecord[] }) {
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm bg-white rounded-lg border border-blue-100">
+        <thead>
+          <tr className="border-b border-blue-100 text-left text-xs uppercase tracking-wide text-gray-400">
+            <th className="px-3 py-2 font-medium">Tipo</th>
+            <th className="px-3 py-2 font-medium">Nombre</th>
+            <th className="px-3 py-2 font-medium">Valor</th>
+          </tr>
+        </thead>
+        <tbody>
+          {records.map((r, i) => (
+            <tr key={`${r.type}-${r.name}-${i}`} className="border-b border-blue-50 last:border-0">
+              <td className="px-3 py-2 font-mono text-gray-900">{r.type}</td>
+              <td className="px-3 py-2 font-mono text-gray-900">{r.name}</td>
+              <td className="px-3 py-2 font-mono text-gray-900 break-all">{r.value}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+export function DomainPanel({ siteId, slug, initialCustomDomain, initialStatus }: Props) {
   const subdomainUrl = `https://${slug}.${ROOT_DOMAIN}`
 
   const [domain, setDomain] = useState(initialCustomDomain ?? '')
   const [saved, setSaved] = useState<string | null>(initialCustomDomain)
+  const [status, setStatus] = useState<DomainStatus | null>(initialStatus)
   const [copied, setCopied] = useState(false)
   const [feedback, setFeedback] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null)
   const [pending, startTransition] = useTransition()
+  const [checking, startCheck] = useTransition()
 
   function copySubdomain() {
     navigator.clipboard?.writeText(subdomainUrl).then(
@@ -46,12 +110,38 @@ export function DomainPanel({ siteId, slug, initialCustomDomain }: Props) {
       const res = await saveCustomDomain(siteId, value)
       if (res.ok) {
         setSaved(value)
-        setFeedback({ kind: 'ok', text: value ? 'Dominio guardado. Configura tu DNS abajo.' : 'Dominio eliminado.' })
+        setStatus(res.status ?? null)
+        setFeedback({
+          kind: res.error ? 'error' : 'ok',
+          text:
+            res.error ??
+            (value ? 'Dominio guardado. Agrega los registros DNS de abajo.' : 'Dominio eliminado.'),
+        })
       } else {
         setFeedback({ kind: 'error', text: res.error ?? 'No se pudo guardar.' })
       }
     })
   }
+
+  function recheck() {
+    setFeedback(null)
+    startCheck(async () => {
+      const res = await refreshDomainStatus(siteId)
+      if (res.ok) {
+        setStatus(res.status ?? null)
+        if (res.status?.state === 'verificado') {
+          setFeedback({ kind: 'ok', text: '¡Tu dominio ya está verificado y en línea!' })
+        } else if (res.status?.state === 'pendiente') {
+          setFeedback({ kind: 'error', text: 'Aún no detectamos los registros DNS. Puede tardar unas horas.' })
+        }
+      } else {
+        setFeedback({ kind: 'error', text: res.error ?? 'No se pudo verificar.' })
+      }
+    })
+  }
+
+  const hasVercel = status !== null && status.state !== 'no-configurado'
+  const records: DnsRecord[] = status && 'records' in status ? status.records : []
 
   return (
     <div>
@@ -84,7 +174,10 @@ export function DomainPanel({ siteId, slug, initialCustomDomain }: Props) {
 
       {/* Dominio propio */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 md:p-6">
-        <h2 className="text-sm font-semibold text-gray-900 mb-1">Dominio personalizado</h2>
+        <div className="flex items-center justify-between gap-3 mb-1">
+          <h2 className="text-sm font-semibold text-gray-900">Dominio personalizado</h2>
+          {saved && status && <StatusBadge status={status} />}
+        </div>
         <p className="text-xs text-gray-400 mb-3">Escribe el dominio que ya tienes (por ejemplo minegocio.com).</p>
 
         {feedback && (
@@ -116,7 +209,14 @@ export function DomainPanel({ siteId, slug, initialCustomDomain }: Props) {
         </div>
 
         {saved && (
-          <div className="mt-3">
+          <div className="mt-3 flex flex-wrap items-center gap-4">
+            <button
+              onClick={recheck}
+              disabled={checking}
+              className="text-sm font-medium text-blue-600 hover:underline disabled:opacity-50"
+            >
+              {checking ? 'Verificando…' : 'Volver a verificar'}
+            </button>
             <button
               onClick={() => {
                 setDomain('')
@@ -135,29 +235,38 @@ export function DomainPanel({ siteId, slug, initialCustomDomain }: Props) {
           <div className="mt-6 rounded-xl bg-blue-50 border border-blue-100 p-4">
             <h3 className="text-sm font-semibold text-blue-900 mb-2">Configura tu DNS</h3>
             <p className="text-sm text-blue-800 mb-3">
-              Entra al panel donde compraste <strong>{saved}</strong> y agrega este registro CNAME:
+              Entra al panel donde compraste <strong>{saved}</strong> y agrega
+              {records.length > 1 ? ' estos registros:' : ' este registro:'}
             </p>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm bg-white rounded-lg border border-blue-100">
-                <tbody>
-                  <tr className="border-b border-blue-50">
-                    <td className="px-3 py-2 font-medium text-gray-500 w-28">Tipo</td>
-                    <td className="px-3 py-2 font-mono text-gray-900">CNAME</td>
-                  </tr>
-                  <tr className="border-b border-blue-50">
-                    <td className="px-3 py-2 font-medium text-gray-500">Nombre</td>
-                    <td className="px-3 py-2 font-mono text-gray-900">@ (o www)</td>
-                  </tr>
-                  <tr>
-                    <td className="px-3 py-2 font-medium text-gray-500">Valor</td>
-                    <td className="px-3 py-2 font-mono text-gray-900 break-all">{CNAME_TARGET}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+
+            {hasVercel && records.length > 0 ? (
+              <DnsTable records={records} />
+            ) : (
+              // Fallback cuando Vercel aún no está configurado: instrucción manual.
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm bg-white rounded-lg border border-blue-100">
+                  <tbody>
+                    <tr className="border-b border-blue-50">
+                      <td className="px-3 py-2 font-medium text-gray-500 w-28">Tipo</td>
+                      <td className="px-3 py-2 font-mono text-gray-900">CNAME</td>
+                    </tr>
+                    <tr className="border-b border-blue-50">
+                      <td className="px-3 py-2 font-medium text-gray-500">Nombre</td>
+                      <td className="px-3 py-2 font-mono text-gray-900">@ (o www)</td>
+                    </tr>
+                    <tr>
+                      <td className="px-3 py-2 font-medium text-gray-500">Valor</td>
+                      <td className="px-3 py-2 font-mono text-gray-900 break-all">{CNAME_TARGET_FALLBACK}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            )}
+
             <p className="text-xs text-blue-700 mt-3">
-              🔧 La conexión automática está en camino. Por ahora, en cuanto guardes tu dominio y
-              configures el CNAME, nuestro equipo termina la conexión (suele tardar unas horas).
+              {status?.state === 'verificado'
+                ? '✅ Tu dominio ya apunta correctamente. ¡Listo!'
+                : '🔧 Después de agregar los registros, presiona “Volver a verificar”. El DNS suele tardar de minutos a unas horas en propagarse.'}
             </p>
           </div>
         )}

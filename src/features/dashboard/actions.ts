@@ -4,6 +4,12 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createServerSupabase, createAdminSupabase } from '@/lib/supabase/server'
 import { authorizeSiteAccess } from '@/features/editor/authorize'
+import {
+  addDomainToProject,
+  removeDomainFromProject,
+  getDomainStatus,
+  type DomainStatus,
+} from '@/lib/vercel-domains'
 import type { ServiceItem, SiteProduct } from '@/lib/types/site'
 
 /**
@@ -263,16 +269,27 @@ export async function deleteProduct(
 // Dominio personalizado
 // ————————————————————————————————————————————————————————————————
 
+/** Resultado de guardar/refrescar dominio: incluye el estado de Vercel. */
+export interface DomainActionResult extends ActionResult {
+  /** Estado de verificación en Vercel (undefined si se quitó el dominio). */
+  status?: DomainStatus
+}
+
 /**
  * Guarda (o borra con null) el dominio personalizado del sitio.
  * Valida un hostname simple, lo normaliza a minúsculas y maneja el conflicto
- * de unicidad de forma amable. NO llama a ninguna API de Vercel: la conexión
- * automática la termina soporte (ver DomainPanel).
+ * de unicidad de forma amable.
+ *
+ * Tras guardar, adjunta el dominio al proyecto de Vercel (`addDomainToProject`)
+ * y devuelve el estado de verificación (`getDomainStatus`) para que el panel
+ * muestre los registros DNS reales. Si el token de Vercel no está configurado,
+ * degrada con gracia: el dominio queda guardado y el estado es `no-configurado`.
+ * Al quitar el dominio (null) se intenta desvincularlo de Vercel (best-effort).
  */
 export async function saveCustomDomain(
   siteId: string,
   domain: string | null,
-): Promise<ActionResult> {
+): Promise<DomainActionResult> {
   const email = await currentUserEmail()
   if (!email) return { ok: false, error: 'Tu sesión expiró. Vuelve a entrar.' }
 
@@ -293,6 +310,15 @@ export async function saveCustomDomain(
   }
 
   const admin = await createAdminSupabase()
+
+  // Dominio previo: necesario para desvincularlo de Vercel si se está quitando.
+  const { data: prevRow } = await admin
+    .from('sites')
+    .select('custom_domain')
+    .eq('id', authorized.siteId)
+    .maybeSingle()
+  const previous = (prevRow as { custom_domain: string | null } | null)?.custom_domain ?? null
+
   const { error } = await admin
     .from('sites')
     .update({ custom_domain: value, updated_at: new Date().toISOString() })
@@ -307,5 +333,47 @@ export async function saveCustomDomain(
   }
 
   revalidateSite(authorized.slug)
-  return { ok: true }
+
+  // Quitar dominio → desvincular el anterior de Vercel (best-effort) y salir.
+  if (!value) {
+    if (previous) await removeDomainFromProject(previous)
+    return { ok: true }
+  }
+
+  // Adjuntar a Vercel y leer estado. Nunca bloquea el guardado en BD.
+  const attach = await addDomainToProject(value)
+  if (!attach.ok && attach.error && attach.error !== 'no-configurado') {
+    // El dominio quedó guardado, pero avisamos que Vercel falló.
+    return {
+      ok: true,
+      error: `Guardado, pero Vercel no pudo conectarlo aún: ${attach.error}`,
+      status: await getDomainStatus(value),
+    }
+  }
+
+  return { ok: true, status: await getDomainStatus(value) }
+}
+
+/**
+ * Vuelve a consultar el estado de verificación del dominio en Vercel.
+ * Lo usa el botón "Volver a verificar" del panel. Requiere ser dueño del sitio.
+ */
+export async function refreshDomainStatus(siteId: string): Promise<DomainActionResult> {
+  const email = await currentUserEmail()
+  if (!email) return { ok: false, error: 'Tu sesión expiró. Vuelve a entrar.' }
+
+  const authorized = await authorizeSiteAccess(siteId, email)
+  if (!authorized) return { ok: false, error: 'No tienes acceso a este sitio.' }
+
+  const admin = await createAdminSupabase()
+  const { data: row } = await admin
+    .from('sites')
+    .select('custom_domain')
+    .eq('id', authorized.siteId)
+    .maybeSingle()
+
+  const current = (row as { custom_domain: string | null } | null)?.custom_domain ?? null
+  if (!current) return { ok: true }
+
+  return { ok: true, status: await getDomainStatus(current) }
 }

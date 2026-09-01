@@ -3,6 +3,7 @@ import { LoginGate } from '@/features/editor/components/LoginGate'
 import { DashboardShell } from '@/features/dashboard/components/DashboardShell'
 import { DomainPanel } from '@/features/dashboard/components/DomainPanel'
 import { resolveDashboardSite } from '@/features/dashboard/resolve-site'
+import { getDomainStatus, type DomainStatus } from '@/lib/vercel-domains'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Conectar dominio — MiSitio IA', robots: { index: false } }
@@ -29,9 +30,20 @@ export default async function DominioPage({ searchParams }: Props) {
 
   const customDomain = (row as { custom_domain: string | null } | null)?.custom_domain ?? null
 
+  // Estado de verificación en Vercel (si ya hay dominio guardado). Degrada a
+  // 'no-configurado' si el token de Vercel aún no existe — nunca crashea.
+  const initialStatus: DomainStatus | null = customDomain
+    ? await getDomainStatus(customDomain)
+    : null
+
   return (
     <DashboardShell active="dominio" siteId={site.siteId} slug={site.slug} businessName={site.businessName}>
-      <DomainPanel siteId={site.siteId} slug={site.slug} initialCustomDomain={customDomain} />
+      <DomainPanel
+        siteId={site.siteId}
+        slug={site.slug}
+        initialCustomDomain={customDomain}
+        initialStatus={initialStatus}
+      />
     </DashboardShell>
   )
 }
