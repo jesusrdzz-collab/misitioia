@@ -113,7 +113,7 @@ export async function persistGeneratedSite(
     .insert({
       owner_email: lead.email_primary,
       owner_phone: lead.phone_whatsapp || lead.phone_primary,
-      plan: 'gratis',
+      plan: 'free',
     })
     .select('id')
     .single()

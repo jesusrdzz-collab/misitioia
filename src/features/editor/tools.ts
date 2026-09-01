@@ -455,7 +455,7 @@ async function createSite(
     .insert({
       owner_email: ctx.ownerEmail,
       owner_phone: a.contact_whatsapp || a.contact_phone || null,
-      plan: 'gratis',
+      plan: 'free',
     })
     .select('id')
     .single()

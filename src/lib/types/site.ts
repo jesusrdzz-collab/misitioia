@@ -12,7 +12,7 @@
 
 export type SiteStatus = 'generado' | 'reclamado' | 'activo' | 'dado_de_baja'
 
-export type PlanLevel = 'gratis' | 'nivel_2' | 'nivel_3'
+export type PlanLevel = 'free' | 'emprende' | 'crece' | 'pro'
 
 export interface Tenant {
   id: string
