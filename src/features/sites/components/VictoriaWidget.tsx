@@ -3,22 +3,29 @@
 import { useEffect, useRef, useState } from 'react'
 
 /**
- * Widget de chat de Victoria para los sitios hospedados (slug.misitio.site).
+ * Widget de chat de Victoria. Dos modos:
+ *   - 'site': sitios hospedados (slug.misitio.site). Postea { slug, ... }.
+ *   - 'self': homepage de marketing de la propia MiSitio. Postea { self:true, ... }
+ *     y el servidor usa el token dedicado de MiSitio (env).
  *
- * Burbuja flotante (abajo a la derecha) en el color del negocio; abre un panel
- * de chat que postea al proxy same-origin `/api/victoria`. El token de Konnex
- * NUNCA vive aquí: sólo se envía { slug, sessionId, texto } y el servidor
- * resuelve el token del tenant.
+ * Burbuja flotante (abajo a la derecha); abre un panel de chat que postea al
+ * proxy same-origin `/api/victoria`. El token de Konnex NUNCA vive aquí: sólo
+ * se envía el identificador de modo y el servidor resuelve el token.
  *
- * Se monta SÓLO cuando el server confirmó que el tenant tiene token
- * (`enabled`); aun así maneja con gracia el caso `victoria_no_configurada`
- * (por si el token se retira) mostrando "disponible pronto" y ocultándose.
+ * Se monta SÓLO cuando el server confirmó que hay token (`enabled` en modo
+ * sitio; `hasVictoria` por env en modo self); aun así maneja con gracia el caso
+ * `victoria_no_configurada` (por si el token se retira) ocultándose.
  *
  * Estilos self-contained con Tailwind; mobile-first y accesible.
  */
 
+type WidgetMode = 'site' | 'self'
+
 interface Props {
-  slug: string
+  /** Modo del widget. Default 'site'. */
+  mode?: WidgetMode
+  /** Requerido en modo 'site'; ignorado en modo 'self'. */
+  slug?: string
   primaryColor: string
   /** Mensaje de bienvenida configurable (default amable). */
   welcome?: string
@@ -32,8 +39,8 @@ interface ChatMessage {
 
 const SESSION_KEY = 'victoria_session_id'
 
-function loadSessionId(slug: string): string {
-  const key = `${SESSION_KEY}:${slug}`
+function loadSessionId(scope: string): string {
+  const key = `${SESSION_KEY}:${scope}`
   try {
     const existing = window.localStorage.getItem(key)
     if (existing) return existing
@@ -52,9 +59,15 @@ function loadSessionId(slug: string): string {
   return generated
 }
 
-export function VictoriaWidget({ slug, primaryColor, welcome }: Props) {
+export function VictoriaWidget({ mode = 'site', slug, primaryColor, welcome }: Props) {
+  const self = mode === 'self'
+  // Ámbito del sessionId en localStorage: 'victoria_self' en la home, o el slug.
+  const sessionScope = self ? 'victoria_self' : slug ?? 'site'
   const defaultWelcome =
-    welcome || '¡Hola! Soy Victoria, tu asistente. ¿En qué puedo ayudarte hoy?'
+    welcome ||
+    (self
+      ? '¡Hola! Soy Victoria, la asistente de MiSitio IA. Te ayudo a crear tu página web gratis y lista para la búsqueda con IA. ¿Qué negocio tienes?'
+      : '¡Hola! Soy Victoria, tu asistente. ¿En qué puedo ayudarte hoy?')
 
   const [open, setOpen] = useState(false)
   const [hidden, setHidden] = useState(false)
@@ -70,8 +83,8 @@ export function VictoriaWidget({ slug, primaryColor, welcome }: Props) {
   const inputRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
-    setSessionId(loadSessionId(slug))
-  }, [slug])
+    setSessionId(loadSessionId(sessionScope))
+  }, [sessionScope])
 
   useEffect(() => {
     if (open && scrollRef.current) {
@@ -96,7 +109,7 @@ export function VictoriaWidget({ slug, primaryColor, welcome }: Props) {
       const res = await fetch('/api/victoria', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slug, sessionId, texto }),
+        body: JSON.stringify(self ? { self: true, sessionId, texto } : { slug, sessionId, texto }),
       })
       const data = (await res.json()) as {
         ok?: boolean

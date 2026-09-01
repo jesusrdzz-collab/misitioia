@@ -7,6 +7,7 @@ import { Pricing } from '@/features/marketing/components/Pricing'
 import { Timeline } from '@/features/marketing/components/Timeline'
 import { FAQ } from '@/features/marketing/data/faq'
 import { SITE_URL } from '@/features/marketing/brand'
+import { VictoriaWidget } from '@/features/sites/components/VictoriaWidget'
 import {
   organizationJsonLd,
   softwareApplicationJsonLd,
@@ -68,6 +69,11 @@ const FEATURES = [
 ]
 
 export default function HomePage() {
+  // Victoria en la propia home (modo self): sólo si el token dedicado de MiSitio
+  // está aprovisionado en el entorno. El token NUNCA llega al cliente: pasamos
+  // sólo el booleano; el widget postea { self:true } y el server resuelve el token.
+  const hasVictoria = Boolean(process.env.KONNEX_SELF_WEBCHAT_TOKEN)
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={jsonLdScript(organizationJsonLd())} />
@@ -547,6 +553,8 @@ export default function HomePage() {
 
         <SiteFooter />
       </div>
+
+      {hasVictoria && <VictoriaWidget mode="self" primaryColor="#ea580c" />}
     </>
   )
 }
