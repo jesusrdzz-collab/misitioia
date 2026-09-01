@@ -47,6 +47,14 @@ export async function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || ''
   const url = request.nextUrl.clone()
 
+  // Las rutas /api/* deben resolverse a su handler real en CUALQUIER host (apex,
+  // subdominio de negocio o dominio propio). Sin esto, la reescritura a
+  // /sites/{slug} de más abajo convertía p.ej. `negocio.misitio.site/api/victoria`
+  // en `/sites/negocio/api/victoria` (inexistente) y rompía el widget de Victoria.
+  if (request.nextUrl.pathname.startsWith('/api')) {
+    return updateSession(request)
+  }
+
   // Extraer subdominio: "mi-negocio.misitio.site" → "mi-negocio"
   // En dev: "mi-negocio.localhost:3000" → "mi-negocio"
   const isLocalhost = hostname.includes('localhost')
