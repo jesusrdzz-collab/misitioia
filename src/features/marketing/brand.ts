@@ -129,4 +129,5 @@ export const NAV_LINKS = [
   { label: 'Victoria', href: '/#victoria' },
   { label: 'Planes', href: '/#planes' },
   { label: 'Comparativa', href: '/comparativa' },
+  { label: 'Ya tengo web', href: '/instalar' },
 ]
