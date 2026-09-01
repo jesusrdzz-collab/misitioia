@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { PLANS, BRAND, type Plan } from '@/features/marketing/brand'
 import type { PlanId } from '@/lib/stripe'
+import { refreshMyVictoriaUsage } from '@/features/billing/usage'
 import { Banner, type Feedback } from './ui'
 
 /**
@@ -20,6 +21,12 @@ interface Props {
   conversationsIncluded: number
   hasSubscription: boolean
   checkout: 'success' | 'cancel' | null
+  /** Uso de Victoria: conversaciones del periodo (null = aún sin sincronizar). */
+  conversationsUsed: number | null
+  /** true si el tenant tiene token de Konnex (Victoria configurada). */
+  usageConfigured: boolean
+  /** ISO de la última sincronización con Konnex. */
+  usageSyncedAtIso: string | null
 }
 
 const STATUS_LABEL: Record<string, { text: string; className: string }> = {
@@ -35,6 +42,18 @@ function formatDate(iso: string | null): string | null {
   return new Intl.DateTimeFormat('es-MX', { day: 'numeric', month: 'long', year: 'numeric' }).format(d)
 }
 
+function formatDateTime(iso: string | null): string | null {
+  if (!iso) return null
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return null
+  return new Intl.DateTimeFormat('es-MX', {
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(d)
+}
+
 export function PlanPanel({
   siteId,
   currentPlanId,
@@ -43,8 +62,14 @@ export function PlanPanel({
   conversationsIncluded,
   hasSubscription,
   checkout,
+  conversationsUsed,
+  usageConfigured,
+  usageSyncedAtIso,
 }: Props) {
   const [pendingPlan, setPendingPlan] = useState<string | null>(null)
+  const [usedCount, setUsedCount] = useState<number | null>(conversationsUsed)
+  const [syncedAt, setSyncedAt] = useState<string | null>(usageSyncedAtIso)
+  const [refreshing, setRefreshing] = useState(false)
   const [feedback, setFeedback] = useState<Feedback | null>(
     checkout === 'success'
       ? { kind: 'ok', text: '¡Listo! Tu pago se procesó. Tu plan se activa en unos segundos.' }
@@ -86,6 +111,39 @@ export function PlanPanel({
     void post('/api/stripe/portal', { siteId }, 'portal')
   }
 
+  async function refreshUsage() {
+    if (refreshing) return
+    setRefreshing(true)
+    setFeedback(null)
+    try {
+      const res = await refreshMyVictoriaUsage(siteId)
+      if (res.ok && res.usage) {
+        setUsedCount(res.usage.conversationsUsed)
+        setSyncedAt(res.usage.usageSyncedAtIso)
+      } else if (res.error === 'not_configured') {
+        setFeedback({ kind: 'error', text: 'Victoria aún no está activa en tu sitio. La activamos pronto.' })
+      } else {
+        // Konnex inalcanzable: conservamos el último dato conocido.
+        if (res.usage) {
+          setUsedCount(res.usage.conversationsUsed)
+          setSyncedAt(res.usage.usageSyncedAtIso)
+        }
+        setFeedback({ kind: 'error', text: 'No pudimos actualizar el uso ahora. Mostramos el último dato disponible.' })
+      }
+    } catch {
+      setFeedback({ kind: 'error', text: 'Error de conexión al actualizar el uso.' })
+    } finally {
+      setRefreshing(false)
+    }
+  }
+
+  const usagePct =
+    usedCount != null && conversationsIncluded > 0
+      ? Math.min(100, Math.round((usedCount / conversationsIncluded) * 100))
+      : 0
+  const overQuota = usedCount != null && usedCount > conversationsIncluded
+  const syncedLabel = formatDateTime(syncedAt)
+
   return (
     <div>
       <div className="mb-6">
@@ -122,6 +180,48 @@ export function PlanPanel({
           >
             {pendingPlan === 'portal' ? 'Abriendo…' : 'Administrar suscripción'}
           </button>
+        )}
+      </div>
+
+      {/* Medidor de conversaciones de Victoria */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 md:p-6 mb-6">
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <div>
+            <h2 className="text-lg font-bold text-gray-900">Conversaciones de Victoria</h2>
+            <p className="mt-0.5 text-sm text-gray-600">
+              <strong className="text-gray-900">{usedCount != null ? usedCount : '—'}</strong>
+              {' / '}
+              {conversationsIncluded} este mes
+            </p>
+          </div>
+          <button
+            onClick={refreshUsage}
+            disabled={refreshing}
+            className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-60"
+          >
+            {refreshing ? 'Actualizando…' : 'Actualizar'}
+          </button>
+        </div>
+
+        <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-gray-100">
+          <div
+            className={`h-full rounded-full transition-all ${overQuota ? 'bg-amber-500' : 'bg-blue-500'}`}
+            style={{ width: `${usagePct}%` }}
+          />
+        </div>
+
+        {!usageConfigured ? (
+          <p className="mt-2 text-xs text-gray-400">
+            Victoria se activa en tu sitio muy pronto. Aquí verás cuántas conversaciones atiende cada mes.
+          </p>
+        ) : overQuota ? (
+          <p className="mt-2 text-xs text-amber-600">
+            Alcanzaste tu cuota del mes. Puedes seguir atendiendo con créditos Konnex — escríbenos a {BRAND.email}.
+          </p>
+        ) : syncedLabel ? (
+          <p className="mt-2 text-xs text-gray-400">Actualizado el {syncedLabel}.</p>
+        ) : (
+          <p className="mt-2 text-xs text-gray-400">Aún sin sincronizar. Toca “Actualizar”.</p>
         )}
       </div>
 

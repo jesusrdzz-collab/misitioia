@@ -3,6 +3,7 @@ import { LoginGate } from '@/features/editor/components/LoginGate'
 import { DashboardShell } from '@/features/dashboard/components/DashboardShell'
 import { PlanPanel } from '@/features/dashboard/components/PlanPanel'
 import { resolveDashboardSite } from '@/features/dashboard/resolve-site'
+import { getVictoriaUsage } from '@/features/billing/usage'
 import { PLAN_QUOTA, type PlanId } from '@/lib/stripe'
 
 export const dynamic = 'force-dynamic'
@@ -61,6 +62,10 @@ export default async function PlanPage({ searchParams }: Props) {
   const conversationsIncluded = row?.conversations_included ?? PLAN_QUOTA[currentPlanId]
   const checkoutStatus = checkout === 'success' ? 'success' : checkout === 'cancel' ? 'cancel' : null
 
+  // Uso de Victoria ya persistido (sin llamar a Konnex en cada carga). El panel
+  // ofrece un botón para refrescar bajo demanda vía server action autorizada.
+  const usage = await getVictoriaUsage(site.tenantId)
+
   return (
     <DashboardShell active="plan" siteId={site.siteId} slug={site.slug} businessName={site.businessName}>
       <PlanPanel
@@ -71,6 +76,9 @@ export default async function PlanPage({ searchParams }: Props) {
         conversationsIncluded={conversationsIncluded}
         hasSubscription={Boolean(row?.stripe_subscription_id)}
         checkout={checkoutStatus}
+        conversationsUsed={usage.conversationsUsed}
+        usageConfigured={usage.configured}
+        usageSyncedAtIso={usage.usageSyncedAtIso}
       />
     </DashboardShell>
   )

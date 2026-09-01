@@ -6,6 +6,8 @@ import { siteBasePath } from '@/features/sites/base-path'
 import { templateForGiro } from '@/features/generator/templates'
 import { buildLocalBusinessJsonLd } from '@/features/aeo/structured-data'
 import { SiteFooter } from '@/features/sites/components/SiteFooter'
+import { VictoriaWidget } from '@/features/sites/components/VictoriaWidget'
+import { tenantHasVictoria } from '@/features/sites/victoria-gate'
 import { telHref, waHref, mapEmbedHref, mapLinkHref } from '@/features/sites/contact'
 
 interface SitePageProps {
@@ -100,6 +102,10 @@ export default async function SitePage({ params }: SitePageProps) {
   const mapLink = mapLinkHref(b.address)
 
   const jsonLd = buildLocalBusinessJsonLd(data)
+
+  // Widget de Victoria: sólo en sitios reclamados/activos Y con token de Konnex
+  // aprovisionado. El token nunca llega al cliente: pasamos sólo el booleano.
+  const victoriaEnabled = b.indexable && (await tenantHasVictoria(site.tenant_id))
 
   const display = { fontFamily: 'var(--font-display), Georgia, serif' } as const
 
@@ -452,6 +458,8 @@ export default async function SitePage({ params }: SitePageProps) {
 
         <SiteFooter businessName={site.business_name} slug={site.slug} base={base} accent={accent} />
       </main>
+
+      {victoriaEnabled && <VictoriaWidget slug={site.slug} primaryColor={primary} />}
     </>
   )
 }
