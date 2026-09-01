@@ -1,7 +1,7 @@
 # WORK_PLAN - MiSitio IA (Creador de Sitios Web con IA)
 > **Estado**: 🟢 EN PRODUCCIÓN (operando + cobrando en real; Victoria "de regreso" verificada en vivo 1-sep)
 > **Última actualización**: 2026-09-01
-> **Producto core COMPLETO y en producción.** Pendientes = mejoras, no bloqueos: conectar Victoria a la home de misitio.site (en curso, falta token del tenant Konnex ffd460a0), checkout de créditos #102, SMTP magic link #101 (Google login ya funciona), auto-attach de dominio propio con token scoped #100. **FINALIZADO solo lo marca Jesús.**
+> **Producto core COMPLETO y en producción**, incl. **Victoria vendiendo MiSitio en la home** (self-mode, live 1-sep). Pendientes = mejoras, no bloqueos: checkout de créditos #102, SMTP magic link #101 (Google login ya funciona), auto-attach de dominio propio con token scoped #100. **FINALIZADO solo lo marca Jesús.**
 > **Fase actual**: Fase 9 — lanzamiento y monetización (logo oficial + login Google en prod + panel del cliente + Stripe)
 >
 > ✅ **SESIÓN 1-sep-2026 (grande):**
