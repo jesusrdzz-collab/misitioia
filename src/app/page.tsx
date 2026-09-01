@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import { SiteNav } from '@/features/marketing/components/SiteNav'
 import { SiteFooter } from '@/features/marketing/components/SiteFooter'
 import { Pricing } from '@/features/marketing/components/Pricing'
+import { Timeline } from '@/features/marketing/components/Timeline'
 import { FAQ } from '@/features/marketing/data/faq'
 import { SITE_URL } from '@/features/marketing/brand'
 import {
@@ -14,14 +15,14 @@ import {
 } from '@/features/marketing/structured-data'
 
 export const metadata: Metadata = {
-  title: 'MiSitio IA — Tu página web con un asistente que vende solo',
+  title: 'MiSitio IA — Tu página web lista para la era de la búsqueda con IA',
   description:
-    'Creamos la página web de tu negocio con IA, gratis, con Victoria incluida: atiende y vende por ti 24/7 por WhatsApp y web, y agenda videollamadas. Los planes de pago amplían cuántas conversaciones atiende al mes. La única web que además convierte.',
+    'La forma de buscar cambió: cada vez menos Google, cada vez más preguntarle a ChatGPT, Gemini o Perplexity qué comprar. La mayoría de las webs son invisibles para esos buscadores de IA. MiSitio IA crea la tuya optimizada para ellos (AEO) y te la entrega gratis. Victoria, el asistente que atiende y vende 24/7, es el complemento opcional.',
   alternates: { canonical: SITE_URL },
   openGraph: {
-    title: 'MiSitio IA — La página web que además vende sola',
+    title: 'MiSitio IA — La página web que nace lista para la búsqueda con IA',
     description:
-      'Página web con IA + un asistente (Victoria) que atiende y vende 24/7. Empieza gratis.',
+      'Optimizada para los nuevos buscadores de IA (ChatGPT, Gemini, Perplexity), gratis. Victoria, tu asistente que vende 24/7, es el complemento opcional.',
     url: SITE_URL,
     siteName: 'MiSitio IA',
     locale: 'es_MX',
@@ -30,8 +31,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'MiSitio IA — La página web que además vende sola',
-    description: 'Página web con IA + un asistente que vende 24/7. Empieza gratis.',
+    title: 'MiSitio IA — La página web que nace lista para la búsqueda con IA',
+    description: 'Optimizada para los buscadores de IA, gratis. Victoria (IA) es el complemento opcional.',
     images: ['/img/og-image.webp'],
   },
 }
@@ -39,29 +40,29 @@ export const metadata: Metadata = {
 const STEPS = [
   {
     n: '1',
-    emoji: '🤖',
-    title: 'La IA arma tu sitio',
-    desc: 'Con la información pública de tu negocio creamos tu página profesional en minutos. Sin diseñadores, sin esperar semanas.',
+    emoji: '💬',
+    title: 'Dile qué quieres',
+    desc: 'Le platicas a la guía de IA qué necesitas. ¿No sabes ni por dónde empezar? Solo dile qué tipo de negocio tienes y ella fabrica todo por ti.',
   },
   {
     n: '2',
-    emoji: '✏️',
-    title: 'Tú le das el toque',
-    desc: 'Reclama tu sitio y ajusta textos, fotos y productos desde un editor tan fácil como usar WhatsApp. Guardas y se publica al instante.',
+    emoji: '✨',
+    title: 'La IA arma tu sitio gratis',
+    desc: 'En minutos tienes una página profesional, lista para Google y para los buscadores de IA. Sin diseñadores, sin costo, sin esperar semanas.',
   },
   {
     n: '3',
-    emoji: '💬',
-    title: 'Victoria empieza a vender',
-    desc: 'Activa el asistente de IA y tu página deja de ser un folleto: contesta, cotiza y agenda videollamadas por ti, de día y de noche.',
+    emoji: '🚀',
+    title: 'Publica y (si quieres) automatiza',
+    desc: 'Ajusta lo que quieras y publica al instante. Cuando estés listo, activa a Victoria para que atienda y venda por ti 24/7.',
   },
 ]
 
 const FEATURES = [
+  { emoji: '🤖', title: 'Lista para los buscadores de IA', desc: 'Nace optimizada (AEO) para que ChatGPT, Gemini y Perplexity la entiendan y te recomienden.' },
+  { emoji: '🔎', title: 'Y también para Google', desc: 'SEO técnico bien hecho desde el primer día, para que te encuentren en todos lados.' },
   { emoji: '⚡', title: 'Lista en minutos', desc: 'Nada de esperar semanas a un desarrollador. Tu página existe y funciona el mismo día.' },
   { emoji: '📱', title: 'Perfecta en el celular', desc: 'Se ve impecable en cualquier teléfono, que es donde tus clientes te van a buscar.' },
-  { emoji: '🔎', title: 'Te encuentran en Google y en la IA', desc: 'Optimizada para buscadores y para asistentes como ChatGPT, Gemini y Perplexity.' },
-  { emoji: '🗓️', title: 'Agenda videollamadas', desc: 'Victoria coordina reuniones por video con tus clientes, sin que tú muevas un dedo.' },
   { emoji: '🧾', title: 'Catálogo con tus productos', desc: 'Muestra lo que vendes con precios y fotos. Actualízalo cuando quieras.' },
   { emoji: '🔒', title: 'Tus datos, protegidos', desc: 'Cumplimos la Ley Federal de Protección de Datos. Tú eres dueño de tu contenido.' },
 ]
@@ -84,20 +85,20 @@ export default function HomePage() {
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-sm font-medium text-orange-700">
                 <span className="h-2 w-2 animate-pulse rounded-full bg-orange-500" />
-                Sitio web + vendedor con IA, en un solo lugar
+                La nueva era de la búsqueda con IA ya empezó
               </div>
               <h1
                 className="mt-5 text-4xl font-bold leading-[1.1] tracking-tight text-stone-900 md:text-6xl"
                 style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
               >
-                Tu página web que, además,{' '}
-                <span className="text-orange-600">atiende y vende sola</span>
+                Ya no solo se googlea: la gente{' '}
+                <span className="text-orange-600">le pregunta a la IA qué comprar</span>
               </h1>
               <p className="mt-6 max-w-xl text-lg leading-relaxed text-stone-600">
-                Las demás plataformas te dan una página bonita y ahí te dejan. Nosotros te damos la
-                página <strong className="font-semibold text-stone-800">y</strong> a Victoria: un
-                asistente de IA que contesta, cotiza y agenda videollamadas por ti, 24/7. Empieza
-                gratis.
+                La mayoría de las páginas de hoy son <strong className="font-semibold text-stone-800">invisibles</strong>{' '}
+                para ChatGPT, Gemini y Perplexity. MiSitio IA crea la tuya{' '}
+                <strong className="font-semibold text-stone-800">lista para esos buscadores de IA</strong> (AEO)
+                — y te la entrega <strong className="font-semibold text-stone-800">gratis</strong>.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Link
@@ -107,14 +108,14 @@ export default function HomePage() {
                   Crear mi sitio gratis →
                 </Link>
                 <Link
-                  href="#victoria"
+                  href="#era-ia"
                   className="rounded-xl border border-stone-300 px-8 py-4 text-center text-lg font-medium text-stone-700 transition-colors hover:bg-white"
                 >
-                  Conoce a Victoria
+                  Cómo cambió la búsqueda
                 </Link>
               </div>
               <p className="mt-4 text-sm text-stone-500">
-                Sin tarjeta. Sin permanencia. Tu página lista hoy mismo.
+                Gratis de verdad. Sin tarjeta. Sin permanencia. Tu página lista hoy mismo.
               </p>
             </div>
 
@@ -130,28 +131,132 @@ export default function HomePage() {
                 />
               </div>
               <div className="absolute -bottom-5 -left-5 hidden rounded-2xl border border-stone-100 bg-white px-5 py-3 shadow-xl sm:block">
-                <div className="text-xs text-stone-500">Victoria, ahora</div>
-                <div className="text-sm font-semibold text-stone-800">“¡Claro! Te agendo la videollamada 🎥”</div>
+                <div className="text-xs text-stone-500">Un cliente, hoy</div>
+                <div className="text-sm font-semibold text-stone-800">“Oye IA, ¿dónde compro esto cerca? 🤔”</div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* PROBLEMA / DIFERENCIAL */}
-        <section className="border-y border-stone-200 bg-white px-4 py-16">
-          <div className="mx-auto max-w-4xl text-center">
-            <p className="text-sm font-semibold uppercase tracking-wider text-orange-600">El detalle que cambia todo</p>
-            <h2
-              className="mx-auto mt-3 max-w-3xl text-2xl font-bold leading-snug text-stone-900 md:text-4xl"
-              style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
-            >
-              Una página estática solo se ve bonita. La tuya <span className="text-orange-600">contesta.</span>
-            </h2>
-            <p className="mx-auto mt-5 max-w-2xl text-lg text-stone-600">
-              El 89% de los negocios pequeños no tiene sitio web, y de los que lo tienen, casi
-              ninguno responde cuando el cliente escribe a medianoche. Ahí se pierde la venta.
-              MiSitio IA cierra esa fuga.
+        {/* EL PUNTO DE FLEXIÓN — problema */}
+        <section id="era-ia" className="border-y border-stone-200 bg-white px-4 py-20">
+          <div className="mx-auto grid max-w-6xl items-center gap-14 md:grid-cols-2">
+            <div className="relative order-2 md:order-1">
+              <div className="overflow-hidden rounded-3xl border border-stone-200 shadow-2xl shadow-stone-300/40">
+                <Image
+                  src="/img/era-ia.webp"
+                  alt="Dueña de negocio viendo cómo un asistente de IA recomienda su producto a un cliente"
+                  width={1344}
+                  height={896}
+                  className="h-full w-full object-cover"
+                />
+              </div>
+            </div>
+            <div className="order-1 md:order-2">
+              <p className="text-sm font-semibold uppercase tracking-wider text-orange-600">El punto de flexión</p>
+              <h2
+                className="mt-3 text-2xl font-bold leading-snug text-stone-900 md:text-4xl"
+                style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
+              >
+                Tu web puede verse bonita y aun así ser <span className="text-orange-600">invisible para la IA.</span>
+              </h2>
+              <p className="mt-5 text-lg leading-relaxed text-stone-600">
+                La forma en que la gente busca y compra está cambiando: cada vez menos Google, cada vez
+                más “pregúntale a la IA qué comprar” — y pronto le pedirán a la IA que compre por ellos.
+                El problema es que los asistentes de IA solo recomiendan lo que <em>entienden</em>, y la
+                mayoría de las páginas no están hechas para que las entiendan.
+              </p>
+              <p className="mt-4 text-lg leading-relaxed text-stone-600">
+                Las páginas que hicieron en otro lado nacieron para la era anterior. La tuya, con
+                MiSitio IA, <strong className="font-semibold text-stone-800">nace lista para esta</strong>.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* TIMELINE — educativo */}
+        <section className="px-4 py-20">
+          <div className="mx-auto max-w-6xl">
+            <div className="text-center">
+              <h2
+                className="text-3xl font-bold text-stone-900 md:text-4xl"
+                style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
+              >
+                Cómo cambió la forma de encontrar un negocio
+              </h2>
+              <p className="mx-auto mt-4 max-w-2xl text-stone-500">
+                Cada época tuvo su forma de buscar. La que no se adaptó, desapareció del mapa. Esta es
+                la nueva.
+              </p>
+            </div>
+            <div className="mx-auto mt-10 max-w-md overflow-hidden rounded-3xl border border-stone-200 shadow-xl shadow-stone-300/40">
+              <Image
+                src="/img/busqueda-ia.webp"
+                alt="Una persona le pregunta a un asistente de voz con IA desde su teléfono"
+                width={1344}
+                height={896}
+                className="h-full w-full object-cover"
+              />
+            </div>
+            <div className="mt-14">
+              <Timeline />
+            </div>
+            <p className="mx-auto mt-14 max-w-2xl text-center text-lg font-medium text-stone-700">
+              Estamos en el punto de flexión. Tu página con MiSitio IA{' '}
+              <span className="text-orange-600">ya está preparada para el nuevo nivel.</span>
             </p>
+          </div>
+        </section>
+
+        {/* GRATIS + FÁCIL */}
+        <section id="gratis" className="bg-white px-4 py-20">
+          <div className="mx-auto grid max-w-6xl items-center gap-14 md:grid-cols-2">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-wider text-orange-600">Gratis y facilísimo</p>
+              <h2
+                className="mt-3 text-2xl font-bold leading-snug text-stone-900 md:text-4xl"
+                style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
+              >
+                Otros te cobran por hacerte una web. Nosotros te la <span className="text-orange-600">regalamos.</span>
+              </h2>
+              <p className="mt-5 text-lg leading-relaxed text-stone-600">
+                Un profesional o una app de las de siempre te cobran miles de pesos por una página. Aquí
+                te la entregamos <strong className="font-semibold text-stone-800">gratis, sin pedirte nada a cambio</strong>.
+                Sin tarjeta, sin prueba con fecha de vencimiento, sin letra chiquita.
+              </p>
+              <ul className="mt-8 space-y-4">
+                {[
+                  ['🗣️', 'Solo dices qué quieres', 'Le platicas a la guía de IA lo que necesitas y te lo arma. Tú mandas, ella construye.'],
+                  ['🏪', '¿No sabes por dónde empezar?', 'Dile nada más qué tipo de negocio tienes y la IA fabrica todo: textos, secciones y catálogo.'],
+                  ['💸', 'Cero costo, para siempre', 'Tu página en un subdominio nuestro, bien hecha y lista para la IA, sin pagar un peso.'],
+                ].map(([e, t, d]) => (
+                  <li key={t} className="flex items-start gap-4">
+                    <span className="text-2xl">{e}</span>
+                    <div>
+                      <div className="font-semibold text-stone-900">{t}</div>
+                      <div className="text-stone-600">{d}</div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/crear"
+                className="mt-9 inline-block rounded-xl bg-orange-600 px-8 py-4 font-semibold text-white transition-colors hover:bg-orange-700"
+              >
+                Crear mi sitio gratis →
+              </Link>
+            </div>
+            <div className="relative">
+              <div className="overflow-hidden rounded-3xl border border-stone-200 shadow-2xl shadow-stone-300/40">
+                <Image
+                  src="/img/facil-crear.webp"
+                  alt="Dueño de un negocio mexicano viendo cómo la IA arma su sitio web mientras platica con la guía"
+                  width={1344}
+                  height={896}
+                  className="h-full w-full object-cover"
+                />
+              </div>
+            </div>
           </div>
         </section>
 
@@ -163,7 +268,7 @@ export default function HomePage() {
                 className="text-3xl font-bold text-stone-900 md:text-4xl"
                 style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
               >
-                De cero a vendiendo, en 3 pasos
+                De una idea a tu página, en 3 pasos
               </h2>
               <p className="mx-auto mt-4 max-w-xl text-stone-500">Sin complicaciones. Sin código. Sin esperar.</p>
             </div>
@@ -182,7 +287,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* VICTORIA — el caballo de Troya */}
+        {/* VICTORIA — el complemento de automatización (add-on opcional) */}
         <section id="victoria" className="bg-stone-950 px-4 py-24 text-white">
           <div className="mx-auto grid max-w-6xl items-center gap-14 md:grid-cols-2">
             <div className="order-2 md:order-1">
@@ -198,19 +303,20 @@ export default function HomePage() {
             </div>
             <div className="order-1 md:order-2">
               <div className="inline-flex items-center gap-2 rounded-full border border-orange-400/30 bg-orange-500/10 px-3 py-1 text-sm font-medium text-orange-300">
-                ✨ Incluida hasta en el plan gratis
+                ✨ El complemento de automatización (opcional)
               </div>
               <h2
                 className="mt-5 text-3xl font-bold leading-tight md:text-5xl"
                 style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
               >
-                Conoce a Victoria, tu vendedora que nunca duerme
+                ¿Quieres que además venda sola? Conoce a Victoria
               </h2>
               <p className="mt-5 text-lg leading-relaxed text-stone-300">
-                Victoria ya lleva meses vendiendo de verdad en otros negocios. Conoce tu catálogo,
-                tus precios y tus horarios. Contesta en español, con la voz de tu marca, a cualquier
-                hora — y cuando el cliente está listo, agenda una videollamada o te pasa la
-                conversación para que cierres tú.
+                Tu página es gratis y es tuya. Victoria es el paso opcional: el asistente de IA que
+                convierte tu sitio en un vendedor 24/7. Ya lleva meses vendiendo de verdad en otros
+                negocios; conoce tu catálogo, tus precios y tus horarios, contesta en español con la
+                voz de tu marca — y cuando el cliente está listo, agenda una videollamada o te pasa la
+                conversación para que cierres tú. Pruébala gratis y actívala cuando la ocupes.
               </p>
               <ul className="mt-8 space-y-4">
                 {[
@@ -288,9 +394,9 @@ export default function HomePage() {
         <section className="px-4 py-16">
           <div className="mx-auto grid max-w-5xl gap-6 sm:grid-cols-3">
             {[
-              ['89%', 'de los negocios pequeños aún no tiene sitio web propio'],
-              ['24/7', 'Victoria atiende sin descanso, incluso mientras duermes'],
+              ['Gratis', 'tu página lista para la IA, sin pagar un peso'],
               ['Minutos', 'es lo que tarda tu página en estar publicada'],
+              ['24/7', 'Victoria vende por ti cuando decides activarla'],
             ].map(([big, small]) => (
               <div key={big} className="rounded-2xl border border-stone-200 bg-white p-8 text-center">
                 <div
@@ -313,10 +419,11 @@ export default function HomePage() {
                 className="text-3xl font-bold text-stone-900 md:text-4xl"
                 style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
               >
-                Empieza gratis. Crece cuando lo necesites.
+                La web es gratis. Automatizar es opcional.
               </h2>
               <p className="mx-auto mt-4 max-w-xl text-stone-500">
-                Sin letra chiquita. Sin permanencia. Empieza gratis con Victoria incluida y sube solo cuando la ocupes.
+                Empieza gratis con tu sitio listo para la IA. Sube de plan solo cuando quieras que
+                Victoria atienda más conversaciones al mes.
               </p>
             </div>
             <div className="mt-14">
@@ -363,10 +470,11 @@ export default function HomePage() {
               className="relative text-3xl font-bold md:text-5xl"
               style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
             >
-              Tu competencia tarda semanas. Tú, minutos.
+              La búsqueda ya cambió. Que tu página no se quede atrás.
             </h2>
             <p className="relative mx-auto mt-4 max-w-2xl text-lg text-orange-50">
-              Crea la página de tu negocio gratis y deja que Victoria empiece a vender por ti.
+              Crea gratis la página de tu negocio, lista para la era de la IA. Y cuando quieras, deja
+              que Victoria empiece a vender por ti.
             </p>
             <Link
               href="/crear"

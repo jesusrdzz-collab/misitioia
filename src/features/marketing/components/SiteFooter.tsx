@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { BRAND } from '../brand'
+import { LogoMark } from './Logo'
 
 /**
  * Footer del producto. Enlaza legales (con alias) y comparativas.
@@ -19,7 +20,7 @@ export function SiteFooter() {
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center gap-2">
-              <span className="text-xl">{BRAND.emoji}</span>
+              <LogoMark className="h-7 w-7 flex-shrink-0" />
               <span
                 className="text-base font-bold text-white"
                 style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
@@ -28,7 +29,11 @@ export function SiteFooter() {
               </span>
             </div>
             <p className="mt-3 max-w-xs text-sm leading-relaxed text-stone-500">
-              La página web que además atiende y vende sola. Hecha para negocios de México.
+              La página web que nace lista para la era de la búsqueda con IA. Hecha para negocios de México.
+            </p>
+            <p className="mt-4 text-xs font-medium text-stone-500">
+              {BRAND.name} es {BRAND.parentTagline}, el ecosistema de herramientas que ayuda a tu
+              negocio a vender más.
             </p>
           </div>
 
@@ -63,7 +68,7 @@ export function SiteFooter() {
         </div>
 
         <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-stone-800 pt-6 text-sm text-stone-500 md:flex-row">
-          <span>© {year} {BRAND.name}. Todos los derechos reservados.</span>
+          <span>© {year} {BRAND.name} · {BRAND.parent}. Todos los derechos reservados.</span>
           <span>Hecho con IA en México 🇲🇽</span>
         </div>
       </div>

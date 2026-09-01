@@ -21,11 +21,11 @@ const playfair = Playfair_Display({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'MiSitio IA — Tu página web que además vende sola',
+    default: 'MiSitio IA — Tu página web lista para la era de la búsqueda con IA',
     template: '%s | MiSitio IA',
   },
   description:
-    'Creamos la página web de tu negocio con IA, gratis. Y le conectamos a Victoria: un asistente que atiende y vende por ti 24/7 por WhatsApp y web, y agenda videollamadas.',
+    'Creamos gratis la página web de tu negocio con IA, optimizada para los nuevos buscadores de IA (ChatGPT, Gemini, Perplexity) y para Google. Victoria, el asistente que atiende y vende por ti 24/7, es el complemento opcional.',
   applicationName: 'MiSitio IA',
   manifest: '/manifest.webmanifest',
   robots: {
@@ -52,9 +52,13 @@ export const metadata: Metadata = {
     'crear página web',
     'sitio web con IA',
     'página web gratis México',
+    'página web lista para IA',
+    'AEO optimización para buscadores de IA',
+    'aparecer en ChatGPT Gemini Perplexity',
     'asistente de ventas IA',
     'chatbot WhatsApp negocio',
     'MiSitio IA',
+    'Konnex 24/7',
   ],
   authors: [{ name: BRAND.name }],
   creator: BRAND.name,

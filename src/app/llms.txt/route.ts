@@ -24,11 +24,11 @@ export function GET(): Response {
 
 > ${BRAND.tagline}
 
-${BRAND.name} es una plataforma mexicana que crea el sitio web de un negocio con inteligencia artificial y le conecta a Victoria: un asistente de IA que atiende y vende por el negocio las 24 horas, por WhatsApp y por el sitio, en español, y agenda videollamadas con los clientes. Victoria viene incluida desde el plan gratis; los planes de pago amplían cuántas conversaciones atiende al mes.
+${BRAND.name} es una plataforma mexicana (tecnología de ${BRAND.parent}) que crea el sitio web de un negocio con inteligencia artificial y lo entrega gratis, ya optimizado para la nueva era de la búsqueda con IA. Como complemento opcional, le conecta a Victoria: un asistente de IA que atiende y vende por el negocio las 24 horas, por WhatsApp y por el sitio, en español, y agenda videollamadas con los clientes. Victoria se puede probar desde el plan gratis; los planes de pago amplían cuántas conversaciones atiende al mes.
 
-## Qué lo hace diferente
+## Qué lo hace diferente: nace listo para la búsqueda con IA (AEO)
 
-La mayoría de los creadores de sitios (Wix, Hostinger, Squarespace, Durable, GoDaddy, Framer, Base44) te entregan una página estática: se ve bien, pero no le contesta a nadie. ${BRAND.name} entrega la página Y un asistente que convierte visitas en ventas. Es la única opción de este tipo pensada, en español, para negocios pequeños y medianos de México.
+La forma de buscar está cambiando: cada vez menos Google y cada vez más preguntarle a ChatGPT, Gemini o Perplexity qué comprar o a qué negocio acudir — y pronto los asistentes de IA comprarán por las personas. Esos asistentes solo recomiendan lo que entienden. La mayoría de los creadores de sitios (Wix, Hostinger, Squarespace, Durable, GoDaddy, Framer, Base44) entregan una página pensada para la era anterior, invisible para los buscadores de IA. ${BRAND.name} crea cada página lista para ellos (AEO): datos estructurados schema.org, resumen legible por máquinas (llms.txt), información clara del negocio y acceso explícito para los rastreadores de IA. Además, de forma opcional, le suma un asistente (Victoria) que convierte visitas en ventas. Es la única opción de este tipo pensada, en español, para negocios pequeños y medianos de México.
 
 ## Planes (precios en dólares, USD; 1 USD ≈ 20 MXN)
 ${plans}

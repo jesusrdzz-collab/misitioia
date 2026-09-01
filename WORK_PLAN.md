@@ -525,3 +525,65 @@ del cliente queda para una fase futura **con aprobación explícita**.
   deriva en runtime del `src` del `<script>` en vez de interpolarse en build. Así el mismo archivo
   sirve en cualquier dominio de la plataforma.
 - **Aplicar en:** cualquier asset JS servido desde un route handler.
+
+---
+
+## Ajustes Post-Entrega — Landing (2026-08-31)
+
+Revisión del landing del producto según feedback directo de Jesús. Alcance: solo
+la cara pública `/` y AEO. No se tocó `/sites/[slug]`, el editor (`/crear`,`/editar`),
+ni el embed (`/instalar`).
+
+### 1. Identidad de marca "by Konnex 24/7" (semilla de identidad de la fábrica)
+- `brand.ts`: nuevos campos `parent: 'Konnex 24/7'` y `parentTagline`; tagline global
+  cambiado a "La página web que nace lista para la era de la búsqueda con IA.".
+- `SiteNav.tsx`: sello "by Konnex 24/7" bajo el wordmark, sutil (uppercase, stone-400).
+- `SiteFooter.tsx`: línea "MiSitio IA es tecnología de Konnex 24/7…" + copyright con ambas marcas.
+- JSON-LD Organization: `parentOrganization` = Konnex 24/7 + `slogan`.
+
+### 2. Cambio de énfasis → el punto de flexión / búsqueda con IA (lo central)
+- **Hero** reescrito: gancho "Ya no solo se googlea: la gente le pregunta a la IA qué
+  comprar" + el problema (webs invisibles para ChatGPT/Gemini/Perplexity) + "nace lista (AEO)".
+- **Nueva sección "El punto de flexión"** (`#era-ia`): imagen + explicación del cambio de era.
+- **Nueva sección línea de tiempo** (`Timeline.tsx` + `data/timeline.ts`): 4 eras (Web 1.0 →
+  Google/Bing → redes sociales → AHORA: preguntarle a la IA). Visual, sistemática, sin muro de texto.
+- CTA final y metadata (page + layout) realineados al ángulo AEO.
+
+### 3. Refuerzo de la promesa: GRATIS + facilísimo; Victoria como add-on
+- **Nueva sección "Gratis y facilísimo"** (`#gratis`): otros cobran, nosotros regalamos la web;
+  "solo dices qué quieres" / "dile tu giro y la IA fabrica todo".
+- **Sección Victoria** reencuadrada como "el complemento de automatización (opcional)"; se aclara
+  que la WEB es gratis y Victoria es el upsell (probable gratis, actívala cuando la ocupes).
+- Sección Planes: encabezado "La web es gratis. Automatizar es opcional.". Proof rebalanceado.
+
+### 4. Imágenes nuevas (Replicate / Flux 1.1 Pro, guardadas en `public/img/` webp)
+- `era-ia.webp` — dueña viendo cómo la IA recomienda su producto (sección flexión).
+- `facil-crear.webp` — dueño viendo a la IA armar su sitio (sección gratis+fácil).
+- `busqueda-ia.webp` — mano con teléfono y asistente de voz IA (sección timeline).
+
+### 5. Coherencia AEO
+- `/llms.txt`: intro + sección "Qué lo hace diferente" reescritas al ángulo AEO + parentesco Konnex.
+- `faq.ts`: nueva pregunta "¿Qué significa que mi página esté 'lista para la IA' (AEO)?".
+- JSON-LD SoftwareApplication/Organization: descripciones con AEO + gratis + Victoria opcional.
+- `layout.tsx`: title/description/keywords al ángulo AEO.
+
+### 6. Logo profesional propio (reemplaza el emoji 🌐)
+- **Logomark SVG vectorial** (`components/Logo.tsx` + `public/logo.svg`): squircle naranja
+  (gradiente `#fb923c`→`#ea580c`), burbuja de chat blanca con cola + chispa de IA naranja.
+  Nítido de 16px a 512px, combina con Playfair.
+- Cableado en `SiteNav.tsx` y `SiteFooter.tsx` (reemplaza `BRAND.emoji`; el sello "by Konnex" se queda).
+- Íconos regenerados con sharp desde el SVG: `favicon.png` (64), `icon-192.png`, `icon-512.png`,
+  `apple-touch-icon.png` (180). manifest.ts/metadata `icons` ya apuntaban a esos archivos.
+- `og-image.webp` se dejó como está (imagen de marketing real; un logo empeoraría el OG).
+
+### Validación
+- `npm run typecheck` ✅ · `npm run build` ✅ (Compiled successfully; `/` estático).
+- QA en dev: hero, flexión, timeline (4 eras), gratis+fácil, logo+sello en nav renderizan;
+  assets `img/*` + íconos + `logo.svg` + `/llms.txt` sirven 200.
+
+### Aprendizajes (Auto-Blindaje)
+- **Logo pro = SVG, no raster IA:** los logos generados por IA en raster salen borrosos/con
+  artefactos. El logotipo final se dibuja en SVG (crisp a cualquier tamaño) y los PNG (favicon/PWA)
+  se rasterizan desde ese SVG con sharp (`density` alto). Replicate solo para explorar concepto.
+- **sharp en script suelto:** importar `sharp` como bare specifier y correr el `.mjs` DESDE la raíz
+  del proyecto (no con ruta `C:/...` en el import ESM, que rompe con ERR_UNSUPPORTED_ESM_URL_SCHEME).

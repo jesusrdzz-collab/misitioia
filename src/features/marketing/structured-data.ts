@@ -20,8 +20,10 @@ export function organizationJsonLd() {
     email: BRAND.email,
     logo: `${SITE_URL}/icon-512.png`,
     image: `${SITE_URL}/img/og-image.webp`,
+    slogan: BRAND.tagline,
     description:
-      'MiSitio IA crea sitios web con inteligencia artificial para negocios en México y les conecta a Victoria, un asistente que atiende y vende 24/7 por WhatsApp y web, y agenda videollamadas.',
+      'MiSitio IA crea sitios web con inteligencia artificial para negocios en México, optimizados para la nueva era de la búsqueda con IA (AEO: ChatGPT, Gemini, Perplexity). La web es gratis; Victoria, un asistente que atiende y vende 24/7 por WhatsApp y web y agenda videollamadas, es el complemento opcional.',
+    parentOrganization: { '@type': 'Organization', name: BRAND.parent },
     areaServed: { '@type': 'Country', name: 'México' },
     inLanguage: 'es-MX',
     sameAs: [] as string[],
@@ -37,7 +39,7 @@ export function softwareApplicationJsonLd() {
     operatingSystem: 'Web',
     url: SITE_URL,
     description:
-      'Plataforma que genera la página web de tu negocio con IA y le suma un asistente de ventas (Victoria) que atiende 24/7 por WhatsApp y web y agenda videollamadas.',
+      'Plataforma que genera gratis la página web de tu negocio con IA, lista para los buscadores de IA (AEO: ChatGPT, Gemini, Perplexity) y para Google, y opcionalmente le suma un asistente de ventas (Victoria) que atiende 24/7 por WhatsApp y web y agenda videollamadas.',
     inLanguage: 'es-MX',
     offers: PLANS.map((p) => ({
       '@type': 'Offer',

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { BRAND, NAV_LINKS } from '../brand'
+import { LogoMark } from './Logo'
 
 /**
  * Barra de navegación del producto. Sticky, translúcida, con CTA a registro.
@@ -10,12 +11,17 @@ export function SiteNav() {
     <header className="sticky top-0 z-50 border-b border-stone-200/70 bg-[#fdfbf7]/85 backdrop-blur-md">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5">
         <Link href="/" className="flex items-center gap-2">
-          <span className="text-2xl">{BRAND.emoji}</span>
-          <span
-            className="text-lg font-bold tracking-tight text-stone-900"
-            style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
-          >
-            {BRAND.name}
+          <LogoMark className="h-9 w-9 flex-shrink-0" />
+          <span className="flex flex-col leading-none">
+            <span
+              className="text-lg font-bold tracking-tight text-stone-900"
+              style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
+            >
+              {BRAND.name}
+            </span>
+            <span className="mt-0.5 text-[10px] font-medium uppercase tracking-wider text-stone-400">
+              by {BRAND.parent}
+            </span>
           </span>
         </Link>
 

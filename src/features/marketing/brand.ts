@@ -10,7 +10,10 @@ export const SITE_URL = `https://${ROOT_DOMAIN}`
 export const BRAND = {
   name: 'MiSitio IA',
   legalName: 'MiSitio IA',
-  tagline: 'La página web que además atiende y vende sola.',
+  tagline: 'La página web que nace lista para la era de la búsqueda con IA.',
+  /** Marca madre: MiSitio IA es tecnología de Konnex 24/7. */
+  parent: 'Konnex 24/7',
+  parentTagline: 'tecnología de Konnex 24/7',
   domain: ROOT_DOMAIN,
   url: SITE_URL,
   email: 'hola@misitio.site',

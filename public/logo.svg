@@ -1,0 +1,12 @@
+<svg viewBox="0 0 64 64" width="64" height="64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="MiSitio IA">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fb923c"/>
+      <stop offset="1" stop-color="#ea580c"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="15" fill="url(#g)"/>
+  <rect x="14" y="15" width="36" height="25" rx="8" fill="#fff"/>
+  <path d="M24 35 L24 49 L34 37 Z" fill="#fff"/>
+  <path d="M32 18 C33 24 34 25 41 27 C34 29 33 30 32 36 C31 30 30 29 23 27 C30 25 31 24 32 18 Z" fill="#ea580c"/>
+</svg>

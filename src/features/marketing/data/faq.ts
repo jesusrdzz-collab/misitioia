@@ -13,6 +13,10 @@ export const FAQ: FaqItem[] = [
     a: 'Las demás plataformas te dan una página bonita y ahí termina su trabajo: tú tienes que contestar cada mensaje. MiSitio IA te da la página y, en el plan de pago, le conecta a Victoria, un asistente de inteligencia artificial que atiende a tus clientes 24/7 por WhatsApp y por tu sitio, responde dudas, cotiza y hasta agenda videollamadas. No es una página que se ve bien: es una página que vende sola.',
   },
   {
+    q: '¿Qué significa que mi página esté “lista para la IA” (AEO)?',
+    a: 'La forma de buscar está cambiando: cada vez más gente le pregunta a ChatGPT, Gemini o Perplexity qué comprar o a qué negocio acudir, en lugar de usar Google. Esos asistentes solo recomiendan lo que entienden. AEO (Answer Engine Optimization) es preparar tu página para que los buscadores de IA la lean, la entiendan y te recomienden: datos estructurados (schema.org), un resumen legible por máquinas (llms.txt), información clara de tu negocio y permiso explícito para los rastreadores de IA. MiSitio IA hace todo eso por ti desde el primer minuto; la mayoría de las páginas hechas en otro lado no lo tienen y quedan invisibles para la IA.',
+  },
+  {
     q: '¿De verdad es gratis? ¿Cuál es el truco?',
     a: 'El plan gratis es gratis para siempre: tu página profesional en un subdominio tunegocio.misitio.site, con tu catálogo y tu información. No pedimos tarjeta. Ganamos cuando tu negocio crece y decides subir al plan con Victoria, dominio propio o WhatsApp conectado. La página gratis es nuestra carta de presentación, no una prueba con fecha de vencimiento.',
   },
