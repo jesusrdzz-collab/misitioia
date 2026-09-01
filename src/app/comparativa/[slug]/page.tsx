@@ -27,7 +27,9 @@ export async function generateMetadata({
   const c = getCompetitor(slug)
   if (!c) return {}
   return {
-    title: c.metaTitle,
+    // metaTitle ya incluye "| MiSitio IA"; `absolute` evita que el template del
+    // layout (%s | MiSitio IA) lo duplique.
+    title: { absolute: c.metaTitle },
     description: c.metaDescription,
     alternates: { canonical: `${SITE_URL}/comparativa/${c.slug}` },
     openGraph: {
