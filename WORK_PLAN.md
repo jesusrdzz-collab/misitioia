@@ -598,3 +598,46 @@ ni el embed (`/instalar`).
   se rasterizan desde ese SVG con sharp (`density` alto). Replicate solo para explorar concepto.
 - **sharp en script suelto:** importar `sharp` como bare specifier y correr el `.mjs` DESDE la raíz
   del proyecto (no con ruta `C:/...` en el import ESM, que rompe con ERR_UNSUPPORTED_ESM_URL_SCHEME).
+
+## Fase 7.7 — Comparativa UENI (agregada 4-sep-2026)
+> **Estado:** ⚠️ CÓDIGO ESCRITO, SIN DEPLOY. Pendiente `npm run typecheck && npm run build` +
+> autorización de Jesús para `git push` + `vercel --prod`.
+> **Contexto:** competidor UENI detectado durante la investigación del cliente ADI Alarmas (Konnex,
+> Zapopan) el 4-sep-2026. Documentado en `NOTA_COMPETIDOR_UENI_04SEP2026.md` (nota inicial) y en
+> `COMPETENCIA_UENI_ANALISIS_4SEP2026.md` (análisis completo, ~20 páginas: empresa, producto, tabla,
+> huecos explotables, plan de mejoras, drafts SEO/AEO, fuentes).
+
+### 7.7.1 Hallazgo competitivo — resumen
+- UENI es el competidor directo más grande hasta ahora (700K sitios claim, 4.7/9,257 Trustpilot,
+  120 empleados, $31 M funding, opera oficialmente en México).
+- Pricing real MX: **MXN$1,399 setup + $439/mo** (no es "one-time", contradice su marketing).
+- Legales por default = placeholder "contáctanos" (verificado literal en 3 legales del cliente
+  ADI Alarmas). Riesgo Meta / WhatsApp Business Cloud API para sus clientes.
+- Sin llms.txt real, sin bots IA en robots.txt, HTML SPA React sin SSR fuerte. **AEO cero.**
+- La ventana para explotar el hueco AEO es corta (meses, no años) — cualquier competidor puede
+  copiar el stack de llms.txt en una semana.
+
+### 7.7.2 Acciones ya hechas (en working tree, sin deploy)
+- [x] `COMPETENCIA_UENI_ANALISIS_4SEP2026.md` creado en la raíz del repo
+- [x] `NOTA_COMPETIDOR_UENI_04SEP2026.md` actualizada con puntero al análisis completo y con
+  corrección de la lectura inicial del precio
+- [x] `src/features/comparativa/competitors.ts` — nueva entrada `slug: 'ueni'` (novena) siguiendo
+  el patrón exacto de las 8 previas. La página `/comparativa/ueni` se genera automáticamente por
+  `generateStaticParams`; el `/llms.txt` del producto la incluye por iteración; el `sitemap.ts`
+  la recoge por la misma vía.
+
+### 7.7.3 Pendientes de decisión de Jesús
+- [ ] `npm run typecheck && npm run build` en verde (sanity check antes de push)
+- [ ] `git add + commit + push` + `vercel --prod` para publicar `/comparativa/ueni`
+- [ ] Ajuste opcional de landing: agregar línea "legales completas y válidas" como feature del plan
+  gratis (`src/features/marketing/brand.ts` + `src/app/page.tsx`)
+- [ ] Ampliar `src/features/marketing/data/faq.ts` con 4 preguntas UENI-específicas (drafts en el
+  análisis, sección 7.3)
+- [ ] Página `/migra-desde-ueni` (depende de Fase 4 — panel del dueño)
+- [ ] Post de blog "UENI vs MiSitio IA" (depende de abrir línea /blog)
+
+### 7.7.4 Cosas NO verificadas (marcar en el análisis)
+- Core Web Vitals reales de UENI (PageSpeed API rate-limited)
+- Volumen real de clientes UENI en México
+- Fecha de origen del claim "700,000 sitios"
+- Precios exactos en CO/CL/BR/ES (verificado solo US y MX)

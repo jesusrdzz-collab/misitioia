@@ -306,6 +306,40 @@ export const COMPETITORS: Competitor[] = [
     metaDescription:
       'Una agencia cotiza miles y entrega en meses, y editar depende de ellos. MiSitio IA te da la página hoy, la editas tú, y suma un asistente de IA que vende. Comparativa honesta.',
   },
+  {
+    slug: 'ueni',
+    name: 'UENI',
+    category: 'Servicio done-for-you',
+    hook: 'Te venden "$79" y terminas pagando cada mes por siempre.',
+    painTitle: 'UENI dice "$79 y listo". Después llega la mensualidad, y los cambios se cobran aparte.',
+    pain: [
+      'UENI hace publicidad con "creamos tu sitio en 7 días por MXN$1,399". La letra chica cuenta otra historia: eso es solo la cuota de setup — el servicio real cuesta $439 MXN al mes desde el plan de entrada, y sube hasta ~$2,500 MXN/mes en el plan Growth. Y en el plan de entrada, editar tu propio sitio solo está incluido los primeros 30 días: después de eso, cambiar un teléfono o subir una foto requiere subir al plan Plus.',
+      'Suma un año: MXN$1,399 de setup + doce meses de $439 = MXN$6,667. Y el siguiente año son otros $5,268. Todo eso para un sitio con la misma plantilla que otros 700,000 de UENI, y que —lo verificamos en un cliente real de Zapopan— llega con las páginas legales vacías: "Por favor, contáctanos para nuestros Términos y Condiciones completos". Con esas legales tu WhatsApp Business puede quedar restringido cuando lo conectes.',
+      'Y cuando alguien le pregunta a ChatGPT o Perplexity dónde comprar lo que tú vendes, tu sitio UENI no aparece: no tienen llms.txt, no permiten explícitamente a los bots de IA, y sirven todo desde una app de React que muchos crawlers no leen bien.',
+    ],
+    fair:
+      'Es justo reconocerlo: UENI lleva más de 10 años operando, tiene 4.7 estrellas en Trustpilot con casi 10 mil reseñas, y su servicio humano —una persona real asignada a tu cuenta— es genuino. Para el dueño que quiere hablar con alguien y no tocar nada, cumple.',
+    bestFor: 'Dueños que prefieren delegar todo a un humano por WhatsApp y que no piensan editar su sitio nunca más.',
+    rows: rows({
+      fast: ['no', 'Prometen 7 días; la primera versión llega en una semana'],
+      mx: ['yes', 'Tienen locale es-MX y llevan años operando en México'],
+      free: ['no', 'MXN$1,399 de setup + $439/mo obligatorio desde el plan de entrada'],
+      done: ['yes', 'Sí te lo hacen (con humano asignado); ese es su modelo'],
+      assistant: ['no', 'Ningún plan incluye asistente de IA para contestar y vender'],
+      video: ['no', 'Formulario y booking sí; videollamada con clientes, no'],
+      whatsapp: ['no', 'Listan tu WhatsApp; no conectan la IA a tu conversación'],
+      crm: ['partial', 'Business Hub para mensajes; no es un CRM de ventas'],
+      easy: ['partial', 'Editar tu propio sitio solo los primeros 30 días en el plan Launch'],
+    }),
+    closing: [
+      'MiSitio IA arranca en cero pesos y se queda gratis para siempre. Cuando decidas que quieres que tu sitio venda solo, subes al plan que trae Victoria — un asistente de IA que contesta, cotiza y agenda videollamadas por ti las 24 horas, en español.',
+      'Y desde el minuto uno tu sitio llega con legales completas y conformes a la ley mexicana, con estructura preparada para que ChatGPT y Google te encuentren, y con un editor que sigue siendo tuyo el año que viene y el otro.',
+    ],
+    metaTitle: 'MiSitio IA vs UENI: gratis vs $1,399 setup + mensualidad | MiSitio IA',
+    metaDescription:
+      'UENI cobra MXN$1,399 de setup más $439/mes y sus páginas legales vienen en blanco. MiSitio IA es gratis para siempre, con legales completas y un asistente de IA que vende por ti. Comparativa honesta para negocios de México.',
+  },
+
 ]
 
 export function getCompetitor(slug: string): Competitor | undefined {
