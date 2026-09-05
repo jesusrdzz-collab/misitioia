@@ -14,6 +14,16 @@ import type { BusinessView } from '@/features/sites/business'
 
 export type LegalKind = 'terminos' | 'aviso-de-privacidad' | 'cookies'
 
+/**
+ * Herramientas de analítica activas en el sitio del cliente. Cuando alguno
+ * está activo, las páginas legales (aviso de privacidad y cookies) mencionan
+ * el tratamiento por terceros — condicional a que el negocio los tenga.
+ */
+export interface LegalAnalyticsFlags {
+  meta: boolean
+  ga: boolean
+}
+
 export interface LegalSection {
   heading: string
   /** Párrafos; una cadena que empieza con "- " se renderiza como viñeta. */
@@ -43,9 +53,24 @@ function locationText(b: BusinessView): string {
   return b.location ? ` con operaciones en ${b.location}` : ''
 }
 
+function analyticsProvidersLine(flags?: LegalAnalyticsFlags): string | null {
+  if (!flags) return null
+  const parts: string[] = []
+  if (flags.meta) parts.push('Meta Platforms, Inc. (Pixel de Facebook e Instagram)')
+  if (flags.ga) parts.push('Google LLC (Google Analytics 4)')
+  if (parts.length === 0) return null
+  return `Este sitio utiliza además herramientas de medición y publicidad de terceros: ${parts.join(
+    ' y ',
+  )}. Estas herramientas pueden recabar datos técnicos y de comportamiento de navegación en su dispositivo, únicamente después de que usted otorgue su consentimiento a través del aviso de cookies mostrado al pie del sitio. Usted puede revocar su consentimiento en cualquier momento borrando las cookies desde la configuración de su navegador.`
+}
+
 /** Aviso de Privacidad conforme a la LFPDPPP. */
-export function buildAvisoPrivacidad(b: BusinessView): LegalDoc {
+export function buildAvisoPrivacidad(
+  b: BusinessView,
+  analytics?: LegalAnalyticsFlags,
+): LegalDoc {
   const responsable = b.name
+  const analyticsLine = analyticsProvidersLine(analytics)
   return {
     kind: 'aviso-de-privacidad',
     title: 'Aviso de Privacidad',
@@ -99,6 +124,7 @@ export function buildAvisoPrivacidad(b: BusinessView): LegalDoc {
         heading: '5. Uso de cookies y tecnologías de rastreo',
         body: [
           'Nuestro sitio web puede utilizar cookies y tecnologías similares para mejorar su experiencia de navegación. Puede consultar el detalle en nuestra Política de Cookies y configurar su navegador para deshabilitarlas.',
+          ...(analyticsLine ? [analyticsLine] : []),
         ],
       },
       {
@@ -180,7 +206,19 @@ export function buildTerminos(b: BusinessView): LegalDoc {
 }
 
 /** Política de Cookies. */
-export function buildCookies(b: BusinessView): LegalDoc {
+export function buildCookies(
+  b: BusinessView,
+  analytics?: LegalAnalyticsFlags,
+): LegalDoc {
+  const analyticsBullets: string[] = []
+  if (analytics?.meta)
+    analyticsBullets.push(
+      '- Meta Pixel (Facebook e Instagram): cookies gestionadas por Meta Platforms, Inc. para medir la efectividad de campañas publicitarias y mostrar anuncios relevantes. Se activan únicamente si acepta el aviso de cookies.',
+    )
+  if (analytics?.ga)
+    analyticsBullets.push(
+      '- Google Analytics 4: cookies gestionadas por Google LLC para conocer, de forma anónima y agregada, cómo se usa el sitio. Se activan únicamente si acepta el aviso de cookies.',
+    )
   return {
     kind: 'cookies',
     title: 'Política de Cookies',
@@ -200,6 +238,7 @@ export function buildCookies(b: BusinessView): LegalDoc {
         body: [
           '- Cookies técnicas o necesarias: permiten el funcionamiento básico del sitio y su correcta visualización.',
           '- Cookies de análisis (si aplican): nos ayudan a entender de forma agregada y anónima cómo se usa el sitio para mejorarlo.',
+          ...analyticsBullets,
           'Este sitio no utiliza cookies para recabar datos personales identificables sin su consentimiento.',
         ],
       },
@@ -219,12 +258,16 @@ export function buildCookies(b: BusinessView): LegalDoc {
   }
 }
 
-export function buildLegalDoc(kind: LegalKind, b: BusinessView): LegalDoc {
+export function buildLegalDoc(
+  kind: LegalKind,
+  b: BusinessView,
+  analytics?: LegalAnalyticsFlags,
+): LegalDoc {
   switch (kind) {
     case 'aviso-de-privacidad':
-      return buildAvisoPrivacidad(b)
+      return buildAvisoPrivacidad(b, analytics)
     case 'cookies':
-      return buildCookies(b)
+      return buildCookies(b, analytics)
     case 'terminos':
     default:
       return buildTerminos(b)

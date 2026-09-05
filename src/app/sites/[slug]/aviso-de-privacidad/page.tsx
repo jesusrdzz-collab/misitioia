@@ -5,6 +5,7 @@ import { toBusinessView } from '@/features/sites/business'
 import { siteBasePath } from '@/features/sites/base-path'
 import { buildLegalDoc } from '@/features/legal/legal-content'
 import { LegalPage } from '@/features/legal/LegalPage'
+import { getSiteAnalyticsBySlug } from '@/features/analytics/queries'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -29,5 +30,16 @@ export default async function AvisoPrivacidadPage({ params }: Props) {
   if (!data) notFound()
   const b = toBusinessView(data)
   const base = await siteBasePath(slug)
-  return <LegalPage doc={buildLegalDoc('aviso-de-privacidad', b)} business={b} base={base} />
+  const analytics = await getSiteAnalyticsBySlug(slug)
+  const flags =
+    analytics && analytics.plan !== 'free'
+      ? { meta: !!analytics.metaPixelId, ga: !!analytics.gaMeasurementId }
+      : undefined
+  return (
+    <LegalPage
+      doc={buildLegalDoc('aviso-de-privacidad', b, flags)}
+      business={b}
+      base={base}
+    />
+  )
 }

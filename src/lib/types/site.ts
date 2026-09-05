@@ -38,6 +38,9 @@ export interface Site {
   claimed_at: string | null
   created_at: string
   updated_at: string
+  meta_pixel_id: string | null           // Meta Pixel ID (planes != free)
+  ga_measurement_id: string | null       // GA4 Measurement ID (planes != free)
+  analytics_enabled_at: string | null    // Primera vez que se guardó algún ID
 }
 
 export interface ServiceItem {
