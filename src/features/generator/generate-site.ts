@@ -7,6 +7,8 @@ import { giroNombre } from './giros'
 import { normalizeWorkingHours } from './working-hours'
 import { resolveUniqueSlug } from './slug'
 import { ROOT_DOMAIN } from '@/lib/domain'
+import { suggestTemplateForGiro } from '@/features/templates/registry'
+import { generateSiteImages } from './images'
 
 /**
  * Fase 2 — Generador automático de sitios.
@@ -119,7 +121,8 @@ export async function persistGeneratedSite(
     .single()
   if (tErr || !tenant) throw new Error(`Error creando tenant: ${tErr?.message}`)
 
-  // 2) site
+  // 2) site — Sprint 6-sep: usar plantilla nueva sugerida por giro
+  const templateSlug = suggestTemplateForGiro(lead.giro)
   const { data: site, error: sErr } = await supabase
     .from('sites')
     .insert({
@@ -127,7 +130,7 @@ export async function persistGeneratedSite(
       slug,
       business_name: lead.business_name,
       giro: lead.giro,
-      template: composed.template,
+      template: templateSlug,
       status: 'generado',
       source: 'terraleads',
       lead_id: lead.id,
@@ -135,6 +138,26 @@ export async function persistGeneratedSite(
     .select('id')
     .single()
   if (sErr || !site) throw new Error(`Error creando site: ${sErr?.message}`)
+
+  // 2.5) IMÁGENES IA (Sprint 6-sep). Se generan en paralelo con Nano Banana
+  // + stock como fallback. Nunca bloquea: si falla, seguimos con null y el
+  // sitio se ve sin foto (nunca peor que hoy).
+  const images = await generateSiteImages({
+    businessName: lead.business_name,
+    giro: lead.giro,
+    tenantId: tenant.id,
+    siteId: site.id,
+    admin: supabase,
+  }).catch((e) => {
+    console.warn('[generate-site] images falló:', (e as Error)?.message)
+    return {
+      hero_image_url: null,
+      about_image_url: null,
+      catalog_placeholder_url: null,
+      ai_generated: 0,
+      estimated_cost_usd: 0,
+    }
+  })
 
   // 3) site_content
   const { error: cErr } = await supabase.from('site_content').insert({
@@ -162,6 +185,9 @@ export async function persistGeneratedSite(
     primary_color: composed.primary_color,
     accent_color: composed.accent_color,
     ai_model: composed.ai_model,
+    hero_image_url: images.hero_image_url,
+    about_image_url: images.about_image_url,
+    catalog_placeholder_url: images.catalog_placeholder_url,
     generated_at: new Date().toISOString(),
   })
   if (cErr) throw new Error(`Error creando site_content: ${cErr.message}`)
