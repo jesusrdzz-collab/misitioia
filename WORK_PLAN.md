@@ -1,6 +1,16 @@
 # WORK_PLAN - MiSitio IA (Creador de Sitios Web con IA)
 > **Estado**: 🟢 EN PRODUCCIÓN (operando + cobrando en real; Victoria "de regreso" verificada en vivo 1-sep)
-> **Última actualización**: 2026-09-01
+> **Última actualización**: 2026-09-06 (Sprint wizard 3 pasos)
+
+## Sprint wizard 3 pasos (2026-09-06)
+
+Implementado el spec `FLUJO_CREACION_SITIO_SPEC_2026-09-06.md` en 3 commits sobre `main` (pushed):
+
+- `16f80c1` — **5ª plantilla `neutro-minimalista`** (foto grande + tipografía, agnóstica de giro). Fallback universal del selector.
+- `a936df7` — **Guardia legal**. Migración `20260906020000` agrega `sites.legal_ready` + `sites.wizard_step` + `site_content.responsable_nombre` + `site_content.responsable_domicilio`. Módulo `src/lib/legal-guard.ts`. Banner amarillo en `/editar/*` cuando faltan datos. Scripts de Meta Pixel/GA4 bloqueados si `legal_ready=false` (coherente con LFPDPPP).
+- `abf12a3` — **Wizard 3 pasos**. Rutas `/crear/paso-1a` (nombre+giro), `/crear/paso-1b` (contacto+responsable), `/crear/paso-2` (5 plantillas), `/crear/paso-3` (imágenes). Feature `src/features/wizard/`. Chat clásico movido a `/crear-chat` como "modo avanzado".
+
+Riesgos residuales anotados en el resumen del sprint enviado a Jesús.
 > **Producto core COMPLETO y en producción**, incl. **Victoria vendiendo MiSitio en la home** (self-mode, live 1-sep). Pendientes = mejoras, no bloqueos: checkout de créditos #102, SMTP magic link #101 (Google login ya funciona), auto-attach de dominio propio con token scoped #100. **FINALIZADO solo lo marca Jesús.**
 > **Fase actual**: Fase 9 — lanzamiento y monetización (logo oficial + login Google en prod + panel del cliente + Stripe)
 >
