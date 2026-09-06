@@ -37,9 +37,13 @@ export default async function SiteLayout({ children, params }: Props) {
   const { slug } = await params
 
   const analytics = await getSiteAnalyticsBySlug(slug)
+  // Guardia legal (Sprint 6-sep-2026): sin datos legales completos NO se
+  // renderizan trackers, aunque el plan y los IDs estén configurados. LFPDPPP
+  // exige aviso de privacidad completo antes de activar Pixel/GA.
   const canTrack =
     !!analytics &&
     analytics.plan !== 'free' &&
+    analytics.legalReady &&
     (!!analytics.metaPixelId || !!analytics.gaMeasurementId)
 
   const base = await siteBasePath(slug)

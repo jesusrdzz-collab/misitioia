@@ -11,6 +11,7 @@ import {
   type DomainStatus,
 } from '@/lib/vercel-domains'
 import type { ServiceItem, SiteProduct } from '@/lib/types/site'
+import { recalculateLegalReady } from '@/lib/legal-guard'
 
 /**
  * Server Actions del panel del cliente (dashboard "Datos de Victoria",
@@ -66,6 +67,8 @@ const basicsSchema = z.object({
   contact_whatsapp: z.string().max(40).nullable().optional(),
   contact_email: z.string().max(160).nullable().optional(),
   contact_address: z.string().max(300).nullable().optional(),
+  responsable_nombre: z.string().max(200).nullable().optional(),
+  responsable_domicilio: z.string().max(400).nullable().optional(),
   ciudad: z.string().max(120).nullable().optional(),
   zona: z.string().max(120).nullable().optional(),
   estado: z.string().max(120).nullable().optional(),
@@ -131,10 +134,9 @@ export async function saveVictoriaBasics(
     .eq('site_id', authorized.siteId)
   if (error) return { ok: false, error: error.message }
 
-  await admin
-    .from('sites')
-    .update({ updated_at: new Date().toISOString() })
-    .eq('id', authorized.siteId)
+  // Recalcula legal_ready — un cambio en contacto/dirección/responsable puede
+  // haber cerrado el gate legal (o abierto uno que faltaba).
+  await recalculateLegalReady(admin, authorized.siteId)
 
   revalidateSite(authorized.slug)
   return { ok: true }

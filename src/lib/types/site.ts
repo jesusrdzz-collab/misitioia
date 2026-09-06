@@ -42,6 +42,8 @@ export interface Site {
   ga_measurement_id: string | null       // GA4 Measurement ID (planes != free)
   analytics_enabled_at: string | null    // Primera vez que se guardó algún ID
   previous_slugs: string[]               // slugs anteriores (con guiones) → 301
+  legal_ready: boolean                   // true si tiene TODOS los datos legales obligatorios
+  wizard_step: string | null             // paso-1a | paso-1b | paso-2 | paso-3 | done | null
 }
 
 export interface ServiceItem {
@@ -72,6 +74,8 @@ export interface SiteContent {
   contact_whatsapp: string | null
   contact_email: string | null
   contact_address: string | null
+  responsable_nombre: string | null       // LFPDPPP: nombre/razón social del responsable
+  responsable_domicilio: string | null    // LFPDPPP: domicilio para oír y recibir notificaciones
   working_hours: WorkingHours | null
   social_facebook: string | null
   social_instagram: string | null

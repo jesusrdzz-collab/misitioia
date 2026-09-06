@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { LogoMark } from '@/features/marketing/components/Logo'
 import { signOut } from '@/features/editor/actions'
@@ -28,9 +28,11 @@ interface Props {
   slug: string
   businessName: string
   children: React.ReactNode
+  /** Banner opcional para renderizar arriba del contenido (ej. LegalGuardBanner). */
+  banner?: ReactNode
 }
 
-export function DashboardShell({ active, siteId, slug, businessName, children }: Props) {
+export function DashboardShell({ active, siteId, slug, businessName, children, banner }: Props) {
   const [drawerOpen, setDrawerOpen] = useState(false)
 
   const q = `?site=${encodeURIComponent(siteId)}`
@@ -145,7 +147,10 @@ export function DashboardShell({ active, siteId, slug, businessName, children }:
 
       {/* Contenido */}
       <main className="flex-1 min-w-0">
-        <div className="mx-auto w-full max-w-4xl p-4 md:p-8">{children}</div>
+        <div className="mx-auto w-full max-w-4xl p-4 md:p-8">
+          {banner}
+          {children}
+        </div>
       </main>
     </div>
   )

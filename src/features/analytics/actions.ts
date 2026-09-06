@@ -86,8 +86,17 @@ export async function saveAnalyticsIds(
     ga_measurement_id: gaMeasurementId,
     updated_at: now,
   }
+  // Guardia legal: solo marcamos `analytics_enabled_at` cuando el sitio tiene
+  // los datos legales completos. Aunque el ID se guarde, el layout no inyectará
+  // los scripts hasta que `legal_ready = true` (revisado en getSiteAnalyticsBySlug).
   if (isFirst && hasAnyId) {
-    patch.analytics_enabled_at = now
+    const { data: siteRow2 } = await admin
+      .from('sites')
+      .select('legal_ready')
+      .eq('id', authorized.siteId)
+      .maybeSingle()
+    const legalReady = (siteRow2 as { legal_ready: boolean | null } | null)?.legal_ready === true
+    if (legalReady) patch.analytics_enabled_at = now
   }
 
   const { error } = await admin

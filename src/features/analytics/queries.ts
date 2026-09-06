@@ -16,6 +16,13 @@ export interface SiteAnalyticsConfig {
   plan: PlanLevel
   metaPixelId: string | null
   gaMeasurementId: string | null
+  /**
+   * Guardia legal (Sprint 6-sep-2026): si el sitio no tiene los datos legales
+   * obligatorios (contacto, dirección, responsable, domicilio del responsable),
+   * NO se inyectan scripts de tracking — coherente con LFPDPPP: sin aviso de
+   * privacidad completo, no hay base para consentimiento válido.
+   */
+  legalReady: boolean
 }
 
 function publicClient() {
@@ -49,7 +56,7 @@ export async function getSiteAnalyticsBySlug(
   const supabase = publicClient()
   const { data } = await supabase
     .from('sites')
-    .select('meta_pixel_id, ga_measurement_id, tenants(plan)')
+    .select('meta_pixel_id, ga_measurement_id, legal_ready, tenants(plan)')
     .eq('slug', slug)
     .maybeSingle()
 
@@ -60,6 +67,7 @@ export async function getSiteAnalyticsBySlug(
   const row = data as unknown as {
     meta_pixel_id: string | null
     ga_measurement_id: string | null
+    legal_ready: boolean | null
     tenants: { plan: string | null } | Array<{ plan: string | null }> | null
   }
 
@@ -68,5 +76,6 @@ export async function getSiteAnalyticsBySlug(
     plan: normalizePlan(tenant?.plan ?? null),
     metaPixelId: row.meta_pixel_id ?? null,
     gaMeasurementId: row.ga_measurement_id ?? null,
+    legalReady: row.legal_ready === true,
   }
 }

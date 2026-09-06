@@ -75,6 +75,12 @@ function ContactSection({ siteId, initial }: { siteId: string; initial: Victoria
   const [whatsapp, setWhatsapp] = useState(initial.contact_whatsapp ?? '')
   const [email, setEmail] = useState(initial.contact_email ?? '')
   const [address, setAddress] = useState(initial.contact_address ?? '')
+  const [respNombre, setRespNombre] = useState(initial.responsable_nombre ?? '')
+  const [respDomicilio, setRespDomicilio] = useState(initial.responsable_domicilio ?? '')
+  const [sameAddress, setSameAddress] = useState(
+    !!initial.contact_address &&
+      initial.contact_address.trim() === (initial.responsable_domicilio ?? '').trim(),
+  )
   const [ciudad, setCiudad] = useState(initial.ciudad ?? '')
   const [zona, setZona] = useState(initial.zona ?? '')
   const [estado, setEstado] = useState(initial.estado ?? '')
@@ -94,11 +100,17 @@ function ContactSection({ siteId, initial }: { siteId: string; initial: Victoria
     const working_hours: Record<string, string> = {}
     for (const d of DAYS) if (hours[d]?.trim()) working_hours[d] = hours[d].trim()
 
+    const resolvedDomicilio = sameAddress
+      ? address.trim() || null
+      : respDomicilio.trim() || null
+
     const payload: VictoriaBasics = {
       contact_phone: phone.trim() || null,
       contact_whatsapp: whatsapp.trim() || null,
       contact_email: email.trim() || null,
       contact_address: address.trim() || null,
+      responsable_nombre: respNombre.trim() || null,
+      responsable_domicilio: resolvedDomicilio,
       ciudad: ciudad.trim() || null,
       zona: zona.trim() || null,
       estado: estado.trim() || null,
@@ -144,6 +156,44 @@ function ContactSection({ siteId, initial }: { siteId: string; initial: Victoria
         <div>
           <label className={labelClass}>Estado</label>
           <input className={inputClass} value={estado} onChange={(e) => setEstado(e.target.value)} placeholder="Nuevo León" />
+        </div>
+      </div>
+
+      <div className="mt-8 rounded-xl border border-amber-200 bg-amber-50/60 p-4">
+        <h3 className="text-sm font-semibold text-gray-900">Datos legales (LFPDPPP)</h3>
+        <p className="text-xs text-gray-600 mt-1 mb-4">
+          Obligatorios para que tu aviso de privacidad sea válido y puedas activar Meta Pixel o Google Analytics.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className={labelClass}>Nombre del responsable de datos</label>
+            <input
+              className={inputClass}
+              value={respNombre}
+              onChange={(e) => setRespNombre(e.target.value)}
+              placeholder="Tu nombre completo o razón social"
+              maxLength={200}
+            />
+          </div>
+          <div>
+            <label className={labelClass}>Domicilio del responsable</label>
+            <input
+              className={inputClass}
+              value={sameAddress ? address : respDomicilio}
+              onChange={(e) => setRespDomicilio(e.target.value)}
+              placeholder="Calle, número, colonia, ciudad, estado"
+              disabled={sameAddress}
+              maxLength={400}
+            />
+            <label className="mt-2 flex items-center gap-2 text-xs text-gray-600">
+              <input
+                type="checkbox"
+                checked={sameAddress}
+                onChange={(e) => setSameAddress(e.target.checked)}
+              />
+              Usar la misma dirección que arriba
+            </label>
+          </div>
         </div>
       </div>
 

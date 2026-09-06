@@ -9,6 +9,7 @@ import { resolveUniqueSlug } from './slug'
 import { ROOT_DOMAIN } from '@/lib/domain'
 import { suggestTemplateForGiro } from '@/features/templates/registry'
 import { generateSiteImages } from './images'
+import { recalculateLegalReady } from '@/lib/legal-guard'
 
 /**
  * Fase 2 — Generador automático de sitios.
@@ -191,6 +192,10 @@ export async function persistGeneratedSite(
     generated_at: new Date().toISOString(),
   })
   if (cErr) throw new Error(`Error creando site_content: ${cErr.message}`)
+
+  // Guardia legal: los leads de TerraLeads suelen tener teléfono/dirección
+  // pero no responsable — recalcula para dejar legal_ready consistente.
+  await recalculateLegalReady(supabase, site.id)
 
   return {
     siteId: site.id,

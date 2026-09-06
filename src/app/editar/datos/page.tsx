@@ -2,6 +2,8 @@ import { createAdminSupabase } from '@/lib/supabase/server'
 import { LoginGate } from '@/features/editor/components/LoginGate'
 import { DashboardShell } from '@/features/dashboard/components/DashboardShell'
 import { DatosVictoriaForm } from '@/features/dashboard/components/DatosVictoriaForm'
+import { LegalGuardBanner } from '@/features/dashboard/components/LegalGuardBanner'
+import { getLegalMissingForSite } from '@/features/dashboard/legal-banner-loader'
 import { resolveDashboardSite } from '@/features/dashboard/resolve-site'
 import type { VictoriaBasics } from '@/features/dashboard/actions'
 import type { ServiceItem, SiteContent, SiteProduct } from '@/lib/types/site'
@@ -43,6 +45,8 @@ export default async function DatosPage({ searchParams }: Props) {
     contact_whatsapp: content?.contact_whatsapp ?? null,
     contact_email: content?.contact_email ?? null,
     contact_address: content?.contact_address ?? null,
+    responsable_nombre: content?.responsable_nombre ?? null,
+    responsable_domicilio: content?.responsable_domicilio ?? null,
     ciudad: content?.ciudad ?? null,
     zona: content?.zona ?? null,
     estado: content?.estado ?? null,
@@ -52,8 +56,16 @@ export default async function DatosPage({ searchParams }: Props) {
   }
   const services: ServiceItem[] = content?.services ?? []
 
+  const missing = await getLegalMissingForSite(site.siteId)
+
   return (
-    <DashboardShell active="datos" siteId={site.siteId} slug={site.slug} businessName={site.businessName}>
+    <DashboardShell
+      active="datos"
+      siteId={site.siteId}
+      slug={site.slug}
+      businessName={site.businessName}
+      banner={missing.length > 0 ? <LegalGuardBanner siteId={site.siteId} missing={missing} /> : undefined}
+    >
       <DatosVictoriaForm
         siteId={site.siteId}
         initialBasics={basics}

@@ -6,6 +6,7 @@ import { GIRO_NOMBRE } from '@/features/generator/giros'
 import { siteHost } from '@/lib/domain'
 import { suggestTemplateForGiro } from '@/features/templates/registry'
 import { generateSiteImages } from '@/features/generator/images'
+import { recalculateLegalReady } from '@/lib/legal-guard'
 
 /**
  * Herramientas del agente editor (Fase 4).
@@ -337,6 +338,8 @@ export async function executeTool(
       if (Object.keys(patch).length > 0) await updateContent(ctx, patch)
       if (business_name) await touchSite(ctx, { business_name })
       else await touchSite(ctx)
+      // Un cambio en teléfono/correo/dirección puede haber cerrado el gate legal.
+      if (ctx.siteId) await recalculateLegalReady(ctx.admin, ctx.siteId)
       const campos = [business_name ? 'nombre' : null, ...Object.keys(patch)]
         .filter(Boolean)
         .join(', ')
@@ -527,6 +530,10 @@ async function createSite(
   ctx.slug = slug
   ctx.giro = giro
   ctx.businessName = a.business_name
+
+  // Recalcula legal_ready — casi siempre será false al crear (falta responsable),
+  // pero deja el flag consistente desde el primer momento.
+  await recalculateLegalReady(ctx.admin, site.id)
 
   return { ok: true, summary: `Sitio creado: ${a.business_name} (${siteHost(slug)}).` }
 }

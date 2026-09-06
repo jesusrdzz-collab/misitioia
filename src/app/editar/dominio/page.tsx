@@ -1,6 +1,8 @@
 import { createAdminSupabase } from '@/lib/supabase/server'
 import { LoginGate } from '@/features/editor/components/LoginGate'
 import { DashboardShell } from '@/features/dashboard/components/DashboardShell'
+import { LegalGuardBanner } from '@/features/dashboard/components/LegalGuardBanner'
+import { getLegalMissingForSite } from '@/features/dashboard/legal-banner-loader'
 import { DomainPanel } from '@/features/dashboard/components/DomainPanel'
 import { resolveDashboardSite } from '@/features/dashboard/resolve-site'
 import { getDomainStatus, type DomainStatus } from '@/lib/vercel-domains'
@@ -36,8 +38,16 @@ export default async function DominioPage({ searchParams }: Props) {
     ? await getDomainStatus(customDomain)
     : null
 
+  const missing = await getLegalMissingForSite(site.siteId)
+
   return (
-    <DashboardShell active="dominio" siteId={site.siteId} slug={site.slug} businessName={site.businessName}>
+    <DashboardShell
+      active="dominio"
+      siteId={site.siteId}
+      slug={site.slug}
+      businessName={site.businessName}
+      banner={missing.length > 0 ? <LegalGuardBanner siteId={site.siteId} missing={missing} /> : undefined}
+    >
       <DomainPanel
         siteId={site.siteId}
         slug={site.slug}

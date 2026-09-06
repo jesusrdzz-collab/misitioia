@@ -1,6 +1,8 @@
 import { createAdminSupabase } from '@/lib/supabase/server'
 import { LoginGate } from '@/features/editor/components/LoginGate'
 import { DashboardShell } from '@/features/dashboard/components/DashboardShell'
+import { LegalGuardBanner } from '@/features/dashboard/components/LegalGuardBanner'
+import { getLegalMissingForSite } from '@/features/dashboard/legal-banner-loader'
 import { AnalyticsPanel } from '@/features/analytics/components/AnalyticsPanel'
 import { resolveDashboardSite } from '@/features/dashboard/resolve-site'
 import type { PlanLevel } from '@/lib/types/site'
@@ -55,6 +57,7 @@ export default async function AnaliticasPage({ searchParams }: Props) {
   } | null
 
   const plan = normalizePlan((tenantRow as { plan: string | null } | null)?.plan)
+  const missing = await getLegalMissingForSite(site.siteId)
 
   return (
     <DashboardShell
@@ -62,6 +65,7 @@ export default async function AnaliticasPage({ searchParams }: Props) {
       siteId={site.siteId}
       slug={site.slug}
       businessName={site.businessName}
+      banner={missing.length > 0 ? <LegalGuardBanner siteId={site.siteId} missing={missing} /> : undefined}
     >
       <AnalyticsPanel
         siteId={site.siteId}
