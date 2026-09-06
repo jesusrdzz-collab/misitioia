@@ -4,6 +4,8 @@ import { resolveUniqueSlug } from '@/features/generator/slug'
 import { templateForGiro } from '@/features/generator/templates'
 import { GIRO_NOMBRE } from '@/features/generator/giros'
 import { siteHost } from '@/lib/domain'
+import { suggestTemplateForGiro } from '@/features/templates/registry'
+import { generateSiteImages } from '@/features/generator/images'
 
 /**
  * Herramientas del agente editor (Fase 4).
@@ -433,6 +435,7 @@ async function createSite(
 
   const giro = a.giro && GIRO_NOMBRE[a.giro] ? a.giro : null
   const template = templateForGiro(giro)
+  const templateSlug = suggestTemplateForGiro(giro)
 
   const slug = await resolveUniqueSlug(a.business_name, {
     slugExists: async (s) => {
@@ -461,7 +464,7 @@ async function createSite(
     .single()
   if (tErr || !tenant) throw new Error(`Error creando tenant: ${tErr?.message}`)
 
-  // 2) site
+  // 2) site — Sprint 6-sep: usar plantilla del sistema nuevo
   const { data: site, error: sErr } = await ctx.admin
     .from('sites')
     .insert({
@@ -469,7 +472,7 @@ async function createSite(
       slug,
       business_name: a.business_name,
       giro,
-      template: template.id,
+      template: templateSlug,
       status: 'reclamado',
       source: 'autoservicio',
       claimed_at: new Date().toISOString(),
@@ -477,6 +480,24 @@ async function createSite(
     .select('id')
     .single()
   if (sErr || !site) throw new Error(`Error creando site: ${sErr?.message}`)
+
+  // 2.5) IMÁGENES IA (Sprint 6-sep). Nunca bloquea; fallback stock siempre.
+  const images = await generateSiteImages({
+    businessName: a.business_name,
+    giro,
+    tenantId: tenant.id,
+    siteId: site.id,
+    admin: ctx.admin,
+  }).catch((e) => {
+    console.warn('[create-site] images falló:', (e as Error)?.message)
+    return {
+      hero_image_url: null,
+      about_image_url: null,
+      catalog_placeholder_url: null,
+      ai_generated: 0,
+      estimated_cost_usd: 0,
+    }
+  })
 
   // 3) site_content base
   const { error: cErr } = await ctx.admin.from('site_content').insert({
@@ -493,6 +514,9 @@ async function createSite(
     estado: a.estado || null,
     primary_color: template.primaryColor,
     accent_color: template.accentColor,
+    hero_image_url: images.hero_image_url,
+    about_image_url: images.about_image_url,
+    catalog_placeholder_url: images.catalog_placeholder_url,
     generated_at: new Date().toISOString(),
   })
   if (cErr) throw new Error(`Error creando site_content: ${cErr.message}`)
