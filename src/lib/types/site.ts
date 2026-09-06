@@ -41,6 +41,7 @@ export interface Site {
   meta_pixel_id: string | null           // Meta Pixel ID (planes != free)
   ga_measurement_id: string | null       // GA4 Measurement ID (planes != free)
   analytics_enabled_at: string | null    // Primera vez que se guardó algún ID
+  previous_slugs: string[]               // slugs anteriores (con guiones) → 301
 }
 
 export interface ServiceItem {
@@ -62,6 +63,8 @@ export interface SiteContent {
   about_text: string | null
   logo_url: string | null
   hero_image_url: string | null
+  about_image_url: string | null
+  catalog_placeholder_url: string | null
   emoji: string | null
   services: ServiceItem[]
   highlights: string[]

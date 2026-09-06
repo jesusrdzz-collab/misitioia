@@ -9,6 +9,29 @@ interface Props {
   base: string
 }
 
+/**
+ * Renderiza texto plano con formato mínimo:
+ *   **negritas** → <strong>
+ * Nada más — nada de HTML embebido, se corta cualquier tag para evitar
+ * inyección accidental desde datos del negocio.
+ */
+function renderInline(text: string): React.ReactNode[] {
+  // Split por marcadores de bold sin capturar dobles asteriscos huérfanos.
+  const parts = text.split(/(\*\*[^*]+\*\*)/g)
+  return parts
+    .filter((p) => p.length > 0)
+    .map((part, i) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return (
+          <strong key={i} className="font-semibold text-gray-800">
+            {part.slice(2, -2)}
+          </strong>
+        )
+      }
+      return <span key={i}>{part}</span>
+    })
+}
+
 function renderBody(body: string[], accent: string) {
   const blocks: React.ReactNode[] = []
   let bullets: string[] = []
@@ -20,7 +43,7 @@ function renderBody(body: string[], accent: string) {
           {bullets.map((b, i) => (
             <li key={i} className="flex gap-2 text-gray-600 leading-relaxed">
               <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: accent }} />
-              <span>{b.replace(/^- /, '')}</span>
+              <span>{renderInline(b.replace(/^- /, ''))}</span>
             </li>
           ))}
         </ul>,
@@ -36,7 +59,7 @@ function renderBody(body: string[], accent: string) {
       flush(`ul-${i}`)
       blocks.push(
         <p key={`p-${i}`} className="my-3 text-gray-600 leading-relaxed">
-          {line}
+          {renderInline(line)}
         </p>,
       )
     }

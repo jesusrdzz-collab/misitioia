@@ -1,6 +1,6 @@
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import type { Metadata } from 'next'
-import { getSiteBySlug } from '@/lib/sites/queries'
+import { getSiteBySlug, getCanonicalSlugForLegacy } from '@/lib/sites/queries'
 import { toBusinessView } from '@/features/sites/business'
 import { siteBasePath } from '@/features/sites/base-path'
 import { templateForGiro } from '@/features/generator/templates'
@@ -81,7 +81,15 @@ function Stars({ rating, color }: { rating: number; color: string }) {
 export default async function SitePage({ params }: SitePageProps) {
   const { slug } = await params
   const data = await getSiteBySlug(slug)
-  if (!data) notFound()
+  if (!data) {
+    // Compat legacy: si el slug con guiones es un `previous_slug`, 301 al
+    // slug canónico concatenado (política del 6-sep-2026).
+    if (slug.includes('-')) {
+      const canonical = await getCanonicalSlugForLegacy(slug)
+      if (canonical) redirect(`/sites/${canonical}`)
+    }
+    notFound()
+  }
 
   const { site, content, products } = data
   const b = toBusinessView(data)

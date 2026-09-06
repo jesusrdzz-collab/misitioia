@@ -51,6 +51,29 @@ export async function getSiteBySlug(slug: string): Promise<RenderableSite | null
   }
 }
 
+/**
+ * Busca el slug canónico de un sitio a partir de un slug anterior (legacy con
+ * guiones). Devuelve el slug actual si el requerido está en `previous_slugs`
+ * de algún sitio publicado. Devuelve null si no lo encuentra o si está dado
+ * de baja.
+ *
+ * Se usa desde el middleware (subdominio) y desde la ruta [slug] para hacer
+ * un 301 permanente sin romper enlaces vivos con guiones.
+ */
+export async function getCanonicalSlugForLegacy(
+  legacySlug: string,
+): Promise<string | null> {
+  const supabase = publicClient()
+  const { data } = await supabase
+    .from('sites')
+    .select('slug')
+    .contains('previous_slugs', [legacySlug])
+    .neq('status', 'dado_de_baja')
+    .limit(1)
+    .maybeSingle()
+  return (data as { slug: string } | null)?.slug ?? null
+}
+
 /** Slugs de todos los sitios publicados (para SSG / generateStaticParams). */
 export async function listPublishedSlugs(): Promise<string[]> {
   const supabase = publicClient()

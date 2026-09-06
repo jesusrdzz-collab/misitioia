@@ -43,6 +43,37 @@ async function lookupSlugByCustomDomain(host: string): Promise<string | null> {
   }
 }
 
+/**
+ * Busca si `subdomain` es un slug anterior (con guiones) de algún sitio y
+ * devuelve el slug canónico actual. Usado para 301-redirect desde subdominios
+ * legacy creados antes del cambio "sin guiones" (6-sep-2026). Devuelve null
+ * si no hay match — el flujo normal continúa (que responderá 404 si el slug
+ * tampoco es actual).
+ */
+async function lookupCanonicalSlugForLegacy(
+  subdomain: string,
+): Promise<string | null> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (!url || !key) return null
+  // Sólo aplica a slugs con guion; los demás no pueden ser "legacy".
+  if (!subdomain.includes('-')) return null
+  try {
+    // PostgREST: cs (contains) sobre array text → previous_slugs @> '{value}'
+    const res = await fetch(
+      `${url}/rest/v1/sites?select=slug&previous_slugs=cs.%7B${encodeURIComponent(
+        subdomain,
+      )}%7D&status=neq.dado_de_baja&limit=1`,
+      { headers: { apikey: key, Authorization: `Bearer ${key}` }, cache: 'no-store' },
+    )
+    if (!res.ok) return null
+    const rows = (await res.json()) as Array<{ slug?: string }>
+    return rows[0]?.slug ?? null
+  } catch {
+    return null
+  }
+}
+
 export async function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || ''
   const url = request.nextUrl.clone()
@@ -101,6 +132,23 @@ export async function middleware(request: NextRequest) {
   // Subdominio reservado → dejar pasar a rutas normales
   if (RESERVED_SUBDOMAINS.has(currentHost)) {
     return updateSession(request)
+  }
+
+  // Subdominios legacy con guion (herreria-san-juan) → 301 al canónico
+  // concatenado (herreriasanjuan). Sólo cuando el subdominio esté registrado
+  // como previous_slug de algún sitio publicado; los demás caen al flujo
+  // normal (que responderá 404 si tampoco es canónico).
+  if (currentHost.includes('-')) {
+    const canonical = await lookupCanonicalSlugForLegacy(currentHost)
+    if (canonical && canonical !== currentHost) {
+      const redirect = new URL(request.url)
+      const suffix = isLocalhost ? '.localhost' : `.${ROOT_DOMAIN}`
+      // Mantener puerto si viene (localhost:3000, dev)
+      const portMatch = hostname.match(/:(\d+)$/)
+      const port = portMatch ? `:${portMatch[1]}` : ''
+      redirect.host = `${canonical}${suffix}${port}`
+      return NextResponse.redirect(redirect, 301)
+    }
   }
 
   // Subdominio de negocio → reescribir a /sites/[slug]

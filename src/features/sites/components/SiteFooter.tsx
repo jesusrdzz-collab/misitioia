@@ -58,13 +58,13 @@ export function SiteFooter({ businessName, slug, base, accent }: Props) {
         <div className="mt-10 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
           <span>© {year} {businessName}. Todos los derechos reservados.</span>
           <span>
-            ¿Es tu negocio y no quieres esta página?{' '}
+            ¿Es tu negocio y quieres tomar control?{' '}
             <Link
-              href={`/baja/${slug}`}
+              href={`https://${ROOT_DOMAIN}/reclamar/${slug}`}
               className="underline hover:text-gray-300 transition-colors"
               style={{ color: accent }}
             >
-              Darla de baja
+              Reclama tu página
             </Link>
           </span>
         </div>
