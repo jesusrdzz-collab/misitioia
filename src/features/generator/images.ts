@@ -48,6 +48,12 @@ export interface GenerateSiteImagesInput {
   /** Cliente admin (bypass RLS) para subir a Storage. */
   admin: SupabaseClient
   apiKey?: string
+  /**
+   * Cuando false, se salta la IA y usa directamente el fallback stock por giro.
+   * Útil para el paso 1a del wizard: preview rápido y barato antes de que el
+   * cliente decida seguir. Default true (comportamiento previo).
+   */
+  aiEnabled?: boolean
 }
 
 const COST_PER_IMAGE = 0.039 // USD, Gemini 2.5 Flash Image (Nano Banana)
@@ -59,7 +65,9 @@ const COST_PER_IMAGE = 0.039 // USD, Gemini 2.5 Flash Image (Nano Banana)
 export async function generateSiteImages(
   input: GenerateSiteImagesInput,
 ): Promise<SiteImageResult> {
-  const apiKey = input.apiKey ?? process.env.GEMINI_API_KEY ?? ''
+  // aiEnabled=false → forzamos stock (pasando apiKey vacío a tryGenerate)
+  const apiKey =
+    input.aiEnabled === false ? '' : (input.apiKey ?? process.env.GEMINI_API_KEY ?? '')
   const prompts = promptForGiro(input.giro)
 
   // Ejecutar en paralelo, cada uno con su fallback. Fallar en una no tumba
