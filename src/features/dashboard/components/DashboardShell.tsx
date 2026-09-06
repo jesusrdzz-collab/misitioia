@@ -13,7 +13,7 @@ import { signOut } from '@/features/editor/actions'
  * activo sin ambigüedad (igual que /editar).
  */
 
-export type DashboardSection = 'sitio' | 'datos' | 'instalar' | 'dominio' | 'analiticas' | 'plan'
+export type DashboardSection = 'sitio' | 'datos' | 'apariencia' | 'instalar' | 'dominio' | 'analiticas' | 'plan'
 
 interface NavItem {
   key: DashboardSection
@@ -36,6 +36,7 @@ export function DashboardShell({ active, siteId, slug, businessName, children }:
   const q = `?site=${encodeURIComponent(siteId)}`
   const nav: NavItem[] = [
     { key: 'sitio', label: 'Mi sitio', icon: '🖥️', href: `/editar${q}` },
+    { key: 'apariencia', label: 'Apariencia', icon: '🎨', href: `/editar/apariencia${q}` },
     { key: 'datos', label: 'Datos de Victoria', icon: '🤖', href: `/editar/datos${q}` },
     { key: 'instalar', label: 'Instalar en mi web', icon: '🧩', href: '/instalar' },
     { key: 'dominio', label: 'Conectar dominio', icon: '🌐', href: `/editar/dominio${q}` },
