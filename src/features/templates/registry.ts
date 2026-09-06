@@ -1,7 +1,13 @@
 /**
  * Registro central de plantillas seleccionables (Sprint 6-sep-2026).
+ *
+ * 5 plantillas fijas — regla de las mermeladas de Iyengar aplicada al propio
+ * producto (más opciones = más parálisis; 5 es el tope). Ver
+ * `FLUJO_CREACION_SITIO_SPEC_2026-09-06.md`.
+ *
  * Cuando el `sites.template` no está en el mapa, caemos en el alias legacy
- * (por giro) y en último caso en `terracota-classic`.
+ * (por giro) y en último caso en `neutro-minimalista` (fallback universal —
+ * el que menos "toma partido" visualmente).
  */
 
 import type { TemplateDefinition } from './types'
@@ -9,6 +15,7 @@ import { TerracotaClassicTemplate, TerracotaClassicPreview } from './terracota-c
 import { MarinoProfesionalTemplate, MarinoProfesionalPreview } from './marino-profesional'
 import { VerdeNaturalTemplate, VerdeNaturalPreview } from './verde-natural'
 import { RosaPremiumTemplate, RosaPremiumPreview } from './rosa-premium'
+import { NeutroMinimalistaTemplate, NeutroMinimalistaPreview } from './neutro-minimalista'
 
 export const TEMPLATE_REGISTRY: Record<string, TemplateDefinition> = {
   'terracota-classic': {
@@ -66,9 +73,29 @@ export const TEMPLATE_REGISTRY: Record<string, TemplateDefinition> = {
     Component: RosaPremiumTemplate,
     Preview: RosaPremiumPreview,
   },
+
+  'neutro-minimalista': {
+    meta: {
+      slug: 'neutro-minimalista',
+      name: 'Neutro minimalista',
+      description: 'Foto grande + tipografía protagonista. Agnóstica de giro, versátil. Off-white, texto casi negro, acento azul petróleo sutil. Mucho whitespace, cero ornamento.',
+      goodFor: ['Cualquier giro', 'Servicios profesionales', 'Estudios creativos', 'Consultoría'],
+      defaultForGiros: ['contador', 'abogado', 'arquitecto', 'diseño', 'consultoria', 'fotografia', 'agencia'],
+      palette: { primary: '#111111', accent: '#264653', background: '#fafaf9', text: '#111111' },
+      displayFontLabel: 'Inter + serif',
+    },
+    Component: NeutroMinimalistaTemplate,
+    Preview: NeutroMinimalistaPreview,
+  },
 }
 
-export const DEFAULT_TEMPLATE_SLUG = 'terracota-classic'
+/**
+ * `neutro-minimalista` es el fallback universal cuando no hay giro que
+ * matchee — es la plantilla que menos "toma partido" visualmente y funciona
+ * para cualquier negocio. Los sitios ya existentes con `template` sin
+ * asignar siguen en `terracota-classic` a través del alias legacy.
+ */
+export const DEFAULT_TEMPLATE_SLUG = 'neutro-minimalista'
 
 export function listTemplates(): TemplateDefinition[] {
   return [
@@ -76,15 +103,16 @@ export function listTemplates(): TemplateDefinition[] {
     TEMPLATE_REGISTRY['marino-profesional'],
     TEMPLATE_REGISTRY['verde-natural'],
     TEMPLATE_REGISTRY['rosa-premium'],
+    TEMPLATE_REGISTRY['neutro-minimalista'],
   ]
 }
 
 /**
  * Resuelve el slug de plantilla a la definición. Acepta:
- *  - slug del nuevo sistema (`terracota-classic`, …)
+ *  - slug del nuevo sistema (`terracota-classic`, …, `neutro-minimalista`)
  *  - slug legacy por giro (`automotriz`, `salud_animal`, `belleza`, …)
  *  - null/undefined → default
- * Siempre devuelve algo (fallback a `terracota-classic`).
+ * Siempre devuelve algo (fallback a `neutro-minimalista`).
  */
 export function resolveTemplate(templateSlug: string | null | undefined): TemplateDefinition {
   if (templateSlug && TEMPLATE_REGISTRY[templateSlug]) return TEMPLATE_REGISTRY[templateSlug]
@@ -98,7 +126,8 @@ export function resolveTemplate(templateSlug: string | null | undefined): Templa
     belleza: 'rosa-premium',
     retail: 'rosa-premium',
     construccion: 'terracota-classic',
-    generico: 'terracota-classic',
+    // 'generico' pasa a la 5ª plantilla — la más neutral
+    generico: 'neutro-minimalista',
   }
   if (templateSlug && LEGACY_ALIAS[templateSlug]) {
     return TEMPLATE_REGISTRY[LEGACY_ALIAS[templateSlug]]
