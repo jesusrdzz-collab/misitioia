@@ -1,5 +1,6 @@
 import { createAdminSupabase } from '@/lib/supabase/server'
 import { getSiteBySlug } from '@/lib/sites/queries'
+import { siteUrl } from '@/lib/domain'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 
@@ -66,7 +67,7 @@ export default async function BajaPage({ params }: BajaPageProps) {
               </button>
             </form>
             <a
-              href={`/sites/${slug}`}
+              href={siteUrl(slug)}
               className="block mt-4 text-sm text-gray-400 hover:text-gray-600"
             >
               No, volver a mi página

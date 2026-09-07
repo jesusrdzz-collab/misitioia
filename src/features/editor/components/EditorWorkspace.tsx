@@ -3,7 +3,7 @@
 import { useRef, useState, useTransition, useEffect } from 'react'
 import { sendEditorMessage, uploadSiteImage, signOut } from '../actions'
 import type { ChatMessage, AppliedChange } from '../types'
-import { ROOT_DOMAIN } from '@/lib/domain'
+import { ROOT_DOMAIN, siteUrl } from '@/lib/domain'
 
 interface Props {
   mode: 'edit' | 'create'
@@ -145,7 +145,7 @@ export function EditorWorkspace({ mode, initialSiteId, initialSlug, businessName
           )}
           {slug && (
             <a
-              href={`/sites/${slug}`}
+              href={siteUrl(slug)}
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm text-blue-600 hover:underline hidden sm:inline"

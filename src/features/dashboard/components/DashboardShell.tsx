@@ -4,6 +4,7 @@ import { useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { LogoMark } from '@/features/marketing/components/Logo'
 import { signOut } from '@/features/editor/actions'
+import { ROOT_DOMAIN, siteUrl } from '@/lib/domain'
 
 /**
  * Esqueleto del panel del cliente: sidebar de navegación a la izquierda
@@ -52,7 +53,7 @@ export function DashboardShell({ active, siteId, slug, businessName, children, b
         <LogoMark className="h-9 w-9 shrink-0" />
         <div className="min-w-0">
           <p className="text-sm font-semibold text-gray-900 truncate">{businessName}</p>
-          <p className="text-xs text-gray-400 truncate">{slug}.misitio.site</p>
+          <p className="text-xs text-gray-400 truncate">{slug}.{ROOT_DOMAIN}</p>
         </div>
       </div>
 
@@ -80,7 +81,7 @@ export function DashboardShell({ active, siteId, slug, businessName, children, b
 
       <div className="border-t border-gray-100 p-3 space-y-1">
         <a
-          href={`/sites/${slug}`}
+          href={siteUrl(slug)}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"

@@ -32,6 +32,10 @@ export async function generateMetadata({ params }: SitePageProps): Promise<Metad
   const claimed = b.indexable
 
   return {
+    // metadataBase = subdominio del sitio, para que las URLs relativas
+    // (OG images, canónicas, etc.) se resuelvan al dominio del negocio y no
+    // al apex de la plataforma, incluso cuando el render suceda en el apex.
+    metadataBase: new URL(b.url),
     title: content?.meta_title || `${site.business_name} — ${b.giroNombre}`,
     description: content?.meta_description || undefined,
     alternates: { canonical: b.url },
@@ -58,6 +62,11 @@ export async function generateMetadata({ params }: SitePageProps): Promise<Metad
       siteName: site.business_name,
       locale: 'es_MX',
       type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: content?.meta_title || site.business_name,
+      description: content?.meta_description || undefined,
     },
   }
 }

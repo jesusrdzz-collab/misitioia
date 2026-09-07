@@ -8,6 +8,7 @@ import {
   finishWizardAction,
 } from '../actions'
 import { uploadSiteImage } from '@/features/editor/actions'
+import { siteUrl } from '@/lib/domain'
 
 type Slot = 'hero' | 'about' | 'catalog'
 
@@ -69,7 +70,7 @@ export function Paso3Images({ siteId, slug, initial, regensUsed }: Props) {
           después desde tu panel.
         </p>
         <a
-          href={`/sites/${slug}`}
+          href={siteUrl(slug)}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-block mt-4 text-sm text-orange-600 hover:underline font-medium"

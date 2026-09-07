@@ -1,19 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
 import { ROOT_DOMAIN } from '@/lib/domain'
-
-/**
- * Subdominios reservados — NO son sitios de negocios.
- * Pasan directo a las rutas de Next.js (panel admin, API, etc.)
- */
-const RESERVED_SUBDOMAINS = new Set([
-  'www',
-  'app',     // Panel del negocio
-  'admin',   // Panel admin interno
-  'api',     // API pública (futuro)
-  'mail',
-  'ftp',
-])
+import { isReservedSubdomain } from '@/lib/reserved-subdomains'
 
 /**
  * Busca el slug de un sitio por su dominio personalizado (sites.custom_domain).
@@ -90,6 +78,37 @@ export async function middleware(request: NextRequest) {
   // En dev: "mi-negocio.localhost:3000" → "mi-negocio"
   const isLocalhost = hostname.includes('localhost')
 
+  // —— 301 legacy /sites/{slug} → subdominio ——
+  // Cuando alguien pide `misitio.site/sites/{slug}[/rest]` (o el mismo con www),
+  // lo mandamos permanentemente a `https://{slug}.misitio.site[/rest]`.
+  // Sólo en producción (apex real) y sólo en GET/HEAD; el iframe de preview del
+  // editor (`/sites/{slug}?preview=N`) queda intacto porque el redirect saltea
+  // cuando hay `?preview=` (así el editor sigue leyendo el sitio en su propio
+  // origen). La URL de prueba `misitioia.vercel.app/sites/{slug}` NO se toca.
+  const hostNoPortEarly = hostname.split(':')[0]
+  const isApexOrWww =
+    hostNoPortEarly === ROOT_DOMAIN || hostNoPortEarly === `www.${ROOT_DOMAIN}`
+  const isSafeMethod = request.method === 'GET' || request.method === 'HEAD'
+  if (
+    isApexOrWww &&
+    isSafeMethod &&
+    request.nextUrl.pathname.startsWith('/sites/') &&
+    !request.nextUrl.searchParams.has('preview')
+  ) {
+    const segments = request.nextUrl.pathname.split('/').filter(Boolean)
+    // segments[0] === 'sites'; segments[1] === slug; segments[2+] === rest.
+    const legacySlug = segments[1]
+    const rest = segments.slice(2).join('/')
+    if (legacySlug && !isReservedSubdomain(legacySlug)) {
+      const target = new URL(request.url)
+      target.host = `${legacySlug}.${ROOT_DOMAIN}`
+      target.protocol = 'https:'
+      target.port = ''
+      target.pathname = rest ? `/${rest}` : '/'
+      return NextResponse.redirect(target, 301)
+    }
+  }
+
   // —— Dominio personalizado del cliente ——
   // Un host que NO es localhost, NO es el apex {ROOT_DOMAIN} y NO es un
   // subdominio *.{ROOT_DOMAIN} es un dominio propio del cliente (p.ej.
@@ -130,7 +149,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Subdominio reservado → dejar pasar a rutas normales
-  if (RESERVED_SUBDOMAINS.has(currentHost)) {
+  if (isReservedSubdomain(currentHost)) {
     return updateSession(request)
   }
 

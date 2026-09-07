@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { savePaso1bAction } from '../actions'
+import { siteUrl } from '@/lib/domain'
 
 /**
  * Paso 1b — datos que hacen el sitio publicable.
@@ -89,7 +90,7 @@ export function Paso1bForm({ siteId, slug, businessName, initial }: Props) {
           en México (LFPDPPP). Puedes editarlos cuando quieras desde tu panel.
         </p>
         <a
-          href={`/sites/${slug}`}
+          href={siteUrl(slug)}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-block mt-4 text-sm text-orange-600 hover:underline font-medium"

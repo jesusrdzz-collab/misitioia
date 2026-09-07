@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { listTemplates } from '../registry'
 import { applyTemplateAction, regenerateImageAction } from '../actions'
+import { siteUrl } from '@/lib/domain'
 
 interface Props {
   siteId: string
@@ -85,7 +86,7 @@ export function TemplateGrid({ siteId, slug, currentTemplate, currentImages, reg
                     {isActive ? 'Plantilla actual' : pending ? 'Aplicando…' : 'Aplicar plantilla'}
                   </button>
                   <a
-                    href={`/sites/${slug}`}
+                    href={siteUrl(slug)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="rounded-xl border border-gray-200 px-3 py-2.5 text-sm text-gray-600 hover:bg-gray-50"

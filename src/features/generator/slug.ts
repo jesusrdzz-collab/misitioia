@@ -14,11 +14,7 @@
  *  - No puede ser un subdominio reservado (www, app, api...).
  */
 
-const FALLBACK_RESERVED = new Set([
-  'www', 'app', 'admin', 'api', 'mail', 'ftp', 'cdn', 'assets', 'static',
-  'blog', 'help', 'soporte', 'status', 'dashboard', 'login', 'registro',
-  'signup', 'misitioia', 'misitio', 'reclamar',
-])
+import { isReservedSubdomain } from '@/lib/reserved-subdomains'
 
 /**
  * Convierte un nombre de negocio en un slug base limpio, sin separadores.
@@ -57,7 +53,7 @@ export async function resolveUniqueSlug(
   const base = slugify(businessName)
 
   const reserved = async (s: string): Promise<boolean> => {
-    if (FALLBACK_RESERVED.has(s)) return true
+    if (isReservedSubdomain(s)) return true
     if (deps.isReserved) return deps.isReserved(s)
     return false
   }

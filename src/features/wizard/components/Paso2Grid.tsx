@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { listTemplates } from '@/features/templates/registry'
 import { savePaso2Action } from '../actions'
+import { siteUrl } from '@/lib/domain'
 
 interface Props {
   siteId: string
@@ -49,7 +50,7 @@ export function Paso2Grid({ siteId, slug, currentTemplate }: Props) {
           después sin perder ni un dato.
         </p>
         <a
-          href={`/sites/${slug}`}
+          href={siteUrl(slug)}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-block mt-4 text-sm text-orange-600 hover:underline font-medium"
