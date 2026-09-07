@@ -19,6 +19,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { stockImageFor } from './stock-fallback'
 import { promptForGiro } from './image-prompts'
+import { applyMisitioWatermark } from './watermark'
 
 const IMAGE_MODEL = 'gemini-2.5-flash-image'
 const IMAGE_ENDPOINT = (model: string, key: string) =>
@@ -251,10 +252,15 @@ async function uploadImage(
   slot: string,
   bytes: Uint8Array,
 ): Promise<string | null> {
+  // Watermark "misitio.site" antes de subir. Falla suave: si el watermark
+  // truena devolvemos los bytes originales (nunca dejamos el pipeline sin
+  // imagen por culpa de la marca).
+  const stamped = await applyMisitioWatermark(bytes)
+
   // Path predecible por slot para que regenerar sobreescriba.
   // ai/{siteId}/{slot}-{timestamp}.png para que el cache-busting funcione.
   const path = `${tenantId}/${siteId}/ai/${slot}-${Date.now()}.png`
-  const { error } = await admin.storage.from('site-images').upload(path, bytes, {
+  const { error } = await admin.storage.from('site-images').upload(path, stamped, {
     contentType: 'image/png',
     upsert: true,
   })
