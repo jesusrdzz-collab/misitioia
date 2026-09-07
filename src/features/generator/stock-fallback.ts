@@ -1,5 +1,10 @@
 /**
  * Fallback de imágenes cuando Gemini falla. Fotos Unsplash (licencia libre).
+ *
+ * Fix P0 pre-campaña Meta (2026-09-07): añadimos grupos "profesional" (oficina),
+ * "escuela", "restaurante", "cafeteria", "abarrotes", "farmacia", "eventos" y
+ * "creativos" para que giros como seguros/finanzas/contabilidad/legal NO caigan
+ * a `generico` (que sale como storefront artesanal → NO cuadra en seguros).
  */
 
 interface StockTriple { hero: string; about: string; catalog: string }
@@ -70,10 +75,93 @@ const STOCK: Record<string, StockTriple> = {
     about: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=1200&q=80',
     catalog: 'https://images.unsplash.com/photo-1558449028-b53a39d100fc?auto=format&fit=crop&w=900&q=80',
   },
-  generico: {
-    hero: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1600&q=80',
+
+  // ——— Nuevos grupos profesionales (Fix P0 2026-09-07)
+  profesional: {
+    // Oficina moderna limpia, escritorio, laptop, luz natural.
+    hero: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1600&q=80',
+    // Handshake profesional / reunión de negocios.
     about: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1200&q=80',
-    catalog: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?auto=format&fit=crop&w=900&q=80',
+    // Flat lay de escritorio con laptop, notebook y café.
+    catalog: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=900&q=80',
+  },
+  legal: {
+    // Biblioteca con libros de derecho / oficina de abogado.
+    hero: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1600&q=80',
+    // Abogado firmando documento.
+    about: 'https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1200&q=80',
+    // Flat lay de papeles legales y pluma.
+    catalog: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=900&q=80',
+  },
+  creativos: {
+    // Agencia creativa / mesa con laptops y post-its.
+    hero: 'https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1600&q=80',
+    // Equipo colaborando frente a laptop.
+    about: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80',
+    // Escritorio creativo con notas y colores.
+    catalog: 'https://images.unsplash.com/photo-1611224923853-80b023f02d71?auto=format&fit=crop&w=900&q=80',
+  },
+  escuela: {
+    // Aula moderna vacía.
+    hero: 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=1600&q=80',
+    // Profesor con estudiantes.
+    about: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=80',
+    // Útiles escolares flat lay.
+    catalog: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=900&q=80',
+  },
+  restaurante: {
+    // Interior de restaurante cálido con mesas.
+    hero: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1600&q=80',
+    // Chef emplatando.
+    about: 'https://images.unsplash.com/photo-1600891964092-4316c288032e?auto=format&fit=crop&w=1200&q=80',
+    // Platillo bien emplatado.
+    catalog: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=900&q=80',
+  },
+  cafeteria: {
+    // Interior de café acogedor.
+    hero: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=1600&q=80',
+    // Barista con latte art.
+    about: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1200&q=80',
+    // Latte y croissant flat lay.
+    catalog: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=900&q=80',
+  },
+  abarrotes: {
+    // Tienda pequeña con anaqueles.
+    hero: 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=1600&q=80',
+    // Tendero atendiendo.
+    about: 'https://images.unsplash.com/photo-1608889476561-6242cfdbf622?auto=format&fit=crop&w=1200&q=80',
+    // Productos de despensa flat lay.
+    catalog: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=900&q=80',
+  },
+  farmacia: {
+    // Farmacia moderna limpia.
+    hero: 'https://images.unsplash.com/photo-1631549916768-4119b2e5f926?auto=format&fit=crop&w=1600&q=80',
+    // Farmacéutica atendiendo.
+    about: 'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?auto=format&fit=crop&w=1200&q=80',
+    // Medicamentos flat lay.
+    catalog: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=900&q=80',
+  },
+  eventos: {
+    // Mesa de evento decorada.
+    hero: 'https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?auto=format&fit=crop&w=1600&q=80',
+    // Catering emplatando.
+    about: 'https://images.unsplash.com/photo-1519671845924-1fd18db430b8?auto=format&fit=crop&w=1200&q=80',
+    // Elementos de catering flat lay.
+    catalog: 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&w=900&q=80',
+  },
+  fotografia: {
+    // Cámara y estudio.
+    hero: 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?auto=format&fit=crop&w=1600&q=80',
+    // Fotógrafo ajustando cámara.
+    about: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1200&q=80',
+    // Equipo fotográfico flat lay.
+    catalog: 'https://images.unsplash.com/photo-1493863641943-9b68992a8d07?auto=format&fit=crop&w=900&q=80',
+  },
+
+  generico: {
+    hero: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1600&q=80',
+    about: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1200&q=80',
+    catalog: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=900&q=80',
   },
 }
 
@@ -84,14 +172,32 @@ const GIRO_TO_GROUP: Record<string, string> = {
   estetica: 'belleza', barberia: 'barberia', spa: 'belleza',
   gimnasio: 'fitness',
   boutique: 'retail', zapateria: 'retail', joyeria: 'retail', muebleria: 'retail', floreria: 'retail',
-  'telas-merceria': 'retail', papeleria: 'retail',
+  'telas-merceria': 'retail', papeleria: 'retail', uniformes: 'retail',
   panaderia: 'panaderia',
   ferreteria: 'ferreteria',
   'material-construccion': 'construccion', vidrieria: 'construccion',
   herreria: 'herreria',
   carpinteria: 'construccion', remodelaciones: 'construccion', plomeria: 'construccion',
   electricista: 'construccion', cerrajeria: 'construccion', tapiceria: 'construccion',
+  construccion: 'construccion',
   'aire-acondicionado': 'hogar', 'renta-mobiliario': 'hogar', 'salon-fiestas': 'hogar', purificadora: 'hogar',
+  imprenta: 'creativos',
+
+  // Profesionales (nuevos 2026-09-07)
+  seguros: 'profesional',
+  finanzas: 'profesional',
+  contabilidad: 'profesional',
+  inmobiliaria: 'profesional',
+  'asesoria-legal': 'legal',
+  'agencia-marketing': 'creativos',
+  fotografia: 'fotografia',
+  eventos: 'eventos',
+  'agencia-viajes': 'eventos',
+  escuela: 'escuela',
+  restaurante: 'restaurante',
+  cafeteria: 'cafeteria',
+  minisuper: 'abarrotes',
+  farmacia: 'farmacia',
 }
 
 export function stockImageFor(giro: string | null | undefined, slot: 'hero' | 'about' | 'catalog'): string | null {

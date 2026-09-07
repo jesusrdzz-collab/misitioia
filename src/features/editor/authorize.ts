@@ -15,6 +15,7 @@ export interface AuthorizedSite {
   slug: string
   businessName: string
   giro: string | null
+  giroLibre: string | null
   status: string
 }
 
@@ -30,7 +31,7 @@ export async function authorizeSiteAccess(
   const admin = await createAdminSupabase()
   const { data: site } = await admin
     .from('sites')
-    .select('id, tenant_id, slug, business_name, giro, status, tenants(owner_email)')
+    .select('id, tenant_id, slug, business_name, giro, giro_libre, status, tenants(owner_email)')
     .eq('id', siteId)
     .maybeSingle()
 
@@ -46,6 +47,7 @@ export async function authorizeSiteAccess(
     slug: site.slug,
     businessName: site.business_name,
     giro: site.giro,
+    giroLibre: (site as { giro_libre?: string | null }).giro_libre ?? null,
     status: site.status,
   }
 }

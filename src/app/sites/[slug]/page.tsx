@@ -7,7 +7,7 @@ import { templateForGiro } from '@/features/generator/templates'
 import { buildLocalBusinessJsonLd } from '@/features/aeo/structured-data'
 import { VictoriaWidget } from '@/features/sites/components/VictoriaWidget'
 import { tenantHasVictoria } from '@/features/sites/victoria-gate'
-import { telHref, waHref, mapEmbedHref, mapLinkHref } from '@/features/sites/contact'
+import { telHref, waHref, waMessageForGiro, mapEmbedHref, mapLinkHref } from '@/features/sites/contact'
 import { resolveTemplate } from '@/features/templates/registry'
 
 interface SitePageProps {
@@ -88,7 +88,10 @@ export default async function SitePage({ params }: SitePageProps) {
   const preset = templateForGiro(site.giro)
   const emoji = content?.emoji || preset.emoji
 
-  const wa = waHref(business.whatsapp || business.phone)
+  // Fix P0 2026-09-07: pre-llenamos el mensaje de WhatsApp según el giro
+  // para eliminar la fricción del chat vacío (cliente ya no escribe desde cero).
+  const waMessage = waMessageForGiro(site.giro)
+  const wa = waHref(business.whatsapp || business.phone, waMessage)
   const tel = telHref(business.phone)
   const mapEmbed = mapEmbedHref(business.address)
   const mapLink = mapLinkHref(business.address)

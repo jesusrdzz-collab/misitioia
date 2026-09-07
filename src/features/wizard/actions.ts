@@ -42,6 +42,13 @@ async function currentUserEmail(): Promise<string | null> {
 const paso1aSchema = z.object({
   business_name: z.string().trim().min(2, 'El nombre debe tener al menos 2 caracteres.').max(120),
   giro: z.string().trim().max(60).optional().nullable(),
+  /**
+   * Solo se guarda cuando `giro='otros'` — texto libre del cliente para
+   * describir su giro real. Alimenta los prompts de IA y previene que las
+   * imágenes caigan al genérico (terracota/artesanía) por default.
+   * Fix P0 pre-campaña Meta 2026-09-07.
+   */
+  giro_libre: z.string().trim().min(3).max(80).optional().nullable(),
   descripcion: z.string().trim().max(600).optional().nullable(),
 })
 
@@ -66,9 +73,12 @@ export async function createPreviewSiteAction(input: unknown): Promise<WizardAct
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? 'Datos inválidos.' }
   }
-  const { business_name, giro: rawGiro, descripcion } = parsed.data
+  const { business_name, giro: rawGiro, giro_libre: rawGiroLibre, descripcion } = parsed.data
 
   const giro = rawGiro && GIRO_NOMBRE[rawGiro] ? rawGiro : null
+  // giro_libre solo importa cuando el cliente eligió "otros" en el selector;
+  // si eligió un giro real del catálogo, ignoramos cualquier texto libre.
+  const giroLibre = giro === 'otros' ? (rawGiroLibre?.trim() ?? null) : null
   const template = templateForGiro(giro)
   const templateSlug = suggestTemplateForGiro(giro)
 
@@ -103,6 +113,7 @@ export async function createPreviewSiteAction(input: unknown): Promise<WizardAct
       slug,
       business_name,
       giro,
+      giro_libre: giroLibre,
       template: templateSlug,
       status: 'reclamado',
       source: 'wizard',
@@ -119,6 +130,8 @@ export async function createPreviewSiteAction(input: unknown): Promise<WizardAct
   await generateSiteImages({
     businessName: business_name,
     giro,
+    giroLibre,
+    descripcion: descripcion?.trim() ?? null,
     tenantId: tenant.id,
     siteId: site.id,
     admin,
@@ -293,6 +306,7 @@ export async function regenerateWizardImageAction(
   const result = await regenerateSingleImage({
     slot,
     giro: authorized.giro,
+    giroLibre: authorized.giroLibre,
     tenantId: authorized.tenantId,
     siteId: authorized.siteId,
     admin,

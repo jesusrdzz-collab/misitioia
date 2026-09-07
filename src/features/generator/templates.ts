@@ -139,6 +139,8 @@ const GIRO_TO_TEMPLATE: Record<string, string> = {
   'telas-merceria': 'retail',
   papeleria: 'retail',
   panaderia: 'retail',
+  farmacia: 'retail',
+  minisuper: 'retail',
   // construcción / oficios
   ferreteria: 'construccion',
   'material-construccion': 'construccion',
@@ -150,15 +152,29 @@ const GIRO_TO_TEMPLATE: Record<string, string> = {
   electricista: 'construccion',
   cerrajeria: 'construccion',
   tapiceria: 'construccion',
+  construccion: 'construccion',
   // hogar / eventos / servicios
   'aire-acondicionado': 'hogar',
   'renta-mobiliario': 'hogar',
   'salon-fiestas': 'hogar',
   purificadora: 'hogar',
+  // servicios profesionales (2026-09-07): usan 'hogar' (azul, formal) por ahora
+  // — mejor que 'generico'. Cuando haya plantilla "professional" dedicada
+  // migran a ella.
+  seguros: 'hogar',
+  finanzas: 'hogar',
+  contabilidad: 'hogar',
+  'asesoria-legal': 'hogar',
+  inmobiliaria: 'hogar',
+  'agencia-marketing': 'belleza', // rosa/violeta encaja para agencias creativas
+  fotografia: 'belleza',
+  eventos: 'belleza',
+  restaurante: 'retail', // tono cálido para gastronomía (retail = morado/cálido)
+  cafeteria: 'retail',
+  escuela: 'salud',
   imprenta: 'generico',
   uniformes: 'generico',
-  'agencia-viajes': 'generico',
-  inmobiliaria: 'generico',
+  'agencia-viajes': 'hogar',
 }
 
 export function templateForGiro(giro: string | null | undefined): Template {

@@ -44,6 +44,17 @@ export interface SiteImageResult {
 export interface GenerateSiteImagesInput {
   businessName: string
   giro: string | null
+  /**
+   * Texto libre del cliente cuando eligió "otros" en el wizard. Se usa para
+   * armar prompts smart en lugar de caer al genérico storefront/terracota.
+   * Fix P0 2026-09-07.
+   */
+  giroLibre?: string | null
+  /**
+   * Descripción libre del negocio (paso 1a). Complementa `giroLibre` en los
+   * prompts smart para dar más contexto a Gemini.
+   */
+  descripcion?: string | null
   tenantId: string
   siteId: string
   /** Cliente admin (bypass RLS) para subir a Storage. */
@@ -69,7 +80,10 @@ export async function generateSiteImages(
   // aiEnabled=false → forzamos stock (pasando apiKey vacío a tryGenerate)
   const apiKey =
     input.aiEnabled === false ? '' : (input.apiKey ?? process.env.GEMINI_API_KEY ?? '')
-  const prompts = promptForGiro(input.giro)
+  const prompts = promptForGiro(input.giro, {
+    giroLibre: input.giroLibre ?? null,
+    descripcion: input.descripcion ?? null,
+  })
 
   // Ejecutar en paralelo, cada uno con su fallback. Fallar en una no tumba
   // las otras.
@@ -124,13 +138,20 @@ export async function generateSiteImages(
 export async function regenerateSingleImage(input: {
   slot: 'hero' | 'about' | 'catalog'
   giro: string | null
+  /** Texto libre del cliente cuando giro='otros'. Fix P0 2026-09-07. */
+  giroLibre?: string | null
+  /** Descripción del negocio para prompts smart. */
+  descripcion?: string | null
   tenantId: string
   siteId: string
   admin: SupabaseClient
   apiKey?: string
 }): Promise<{ ok: boolean; url?: string; source?: 'ai' | 'stock'; error?: string }> {
   const apiKey = input.apiKey ?? process.env.GEMINI_API_KEY ?? ''
-  const prompts = promptForGiro(input.giro)
+  const prompts = promptForGiro(input.giro, {
+    giroLibre: input.giroLibre ?? null,
+    descripcion: input.descripcion ?? null,
+  })
   const promptText = prompts[input.slot]
   const aspectRatio =
     input.slot === 'hero' ? '16:9' : input.slot === 'about' ? '4:3' : '1:1'

@@ -56,6 +56,7 @@ export async function regenerateImageAction(
   const result = await regenerateSingleImage({
     slot,
     giro: authorized.giro,
+    giroLibre: authorized.giroLibre,
     tenantId: authorized.tenantId,
     siteId: authorized.siteId,
     admin,
