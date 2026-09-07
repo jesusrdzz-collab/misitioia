@@ -33,15 +33,22 @@ interface Props {
   siteId: string
   slug: string
   initial: { hero: string | null; about: string | null; catalog: string | null }
+  /** Regens IA ya usadas por slot. 0 = habilitado, 1 = agotado. */
+  regensUsed: { hero: number; about: number; catalog: number }
 }
 
-export function Paso3Images({ siteId, slug, initial }: Props) {
+export function Paso3Images({ siteId, slug, initial, regensUsed }: Props) {
   const router = useRouter()
   const [images, setImages] = useState(initial)
+  const [regens, setRegens] = useState(regensUsed)
   const [pending, startTransition] = useTransition()
 
   function update(slot: Slot, url: string | null) {
     setImages((prev) => ({ ...prev, [slot]: url }))
+  }
+
+  function markRegenUsed(slot: Slot) {
+    setRegens((prev) => ({ ...prev, [slot]: 1 }))
   }
 
   function finish() {
@@ -78,7 +85,9 @@ export function Paso3Images({ siteId, slug, initial }: Props) {
             slot={slot}
             siteId={siteId}
             url={images[slot]}
+            regenUsed={regens[slot] > 0}
             onChange={(url) => update(slot, url)}
+            onRegenUsed={() => markRegenUsed(slot)}
           />
         ))}
       </div>
@@ -107,15 +116,18 @@ interface SlotCardProps {
   slot: Slot
   siteId: string
   url: string | null
+  regenUsed: boolean
   onChange: (url: string | null) => void
+  onRegenUsed: () => void
 }
 
-function ImageSlotCard({ slot, siteId, url, onChange }: SlotCardProps) {
+function ImageSlotCard({ slot, siteId, url, regenUsed, onChange, onRegenUsed }: SlotCardProps) {
   const meta = SLOT_META[slot]
   const [source, setSource] = useState<'ai' | 'stock' | 'uploaded' | null>(null)
   const [msg, setMsg] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
   const [uploading, setUploading] = useState(false)
+  const [localRegenUsed, setLocalRegenUsed] = useState(regenUsed)
 
   function regen() {
     setMsg(null)
@@ -125,7 +137,17 @@ function ImageSlotCard({ slot, siteId, url, onChange }: SlotCardProps) {
         onChange(res.url)
         setSource(res.source ?? null)
         setMsg(res.source === 'ai' ? '✨ Nueva imagen generada con IA.' : 'Imagen de galería aplicada.')
+        // Solo bloqueamos si Gemini realmente generó (source='ai').
+        // Un fallback a stock no consumió el candado.
+        if (res.source === 'ai') {
+          setLocalRegenUsed(true)
+          onRegenUsed()
+        }
       } else {
+        if (res.code === 'REGEN_LIMIT_REACHED') {
+          setLocalRegenUsed(true)
+          onRegenUsed()
+        }
         setMsg(res.error ?? 'No se pudo generar.')
       }
     })
@@ -185,11 +207,25 @@ function ImageSlotCard({ slot, siteId, url, onChange }: SlotCardProps) {
           <button
             type="button"
             onClick={regen}
-            disabled={busy}
-            className="w-full rounded-xl bg-neutral-900 text-white text-xs font-semibold px-3 py-2.5 hover:bg-neutral-800 disabled:opacity-60"
+            disabled={busy || localRegenUsed}
+            title={
+              localRegenUsed
+                ? 'Ya usaste la regeneración con IA de esta foto. Puedes subir la tuya sin límite.'
+                : undefined
+            }
+            className="w-full rounded-xl bg-neutral-900 text-white text-xs font-semibold px-3 py-2.5 hover:bg-neutral-800 disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {pending ? 'Generando…' : '✨ Generar con IA'}
+            {localRegenUsed
+              ? '✓ Regeneración IA usada'
+              : pending
+                ? 'Generando…'
+                : '✨ Generar con IA'}
           </button>
+          {localRegenUsed && (
+            <p className="text-[10px] text-stone-500 text-center leading-snug">
+              Puedes subir tu propia foto sin límite.
+            </p>
+          )}
           <label className="w-full">
             <span className="block w-full text-center rounded-xl border border-stone-300 text-neutral-900 text-xs font-semibold px-3 py-2.5 hover:bg-stone-50 cursor-pointer">
               {uploading ? 'Subiendo…' : '📷 Subir mi foto'}

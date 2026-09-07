@@ -29,7 +29,9 @@ export default async function Paso3Page({ searchParams }: Props) {
   const admin = await createAdminSupabase()
   const { data: contentRow } = await admin
     .from('site_content')
-    .select('hero_image_url, about_image_url, catalog_placeholder_url')
+    .select(
+      'hero_image_url, about_image_url, catalog_placeholder_url, hero_regens_used, about_regens_used, catalog_regens_used',
+    )
     .eq('site_id', authorized.siteId)
     .maybeSingle()
 
@@ -44,6 +46,11 @@ export default async function Paso3Page({ searchParams }: Props) {
           hero: content.hero_image_url ?? null,
           about: content.about_image_url ?? null,
           catalog: content.catalog_placeholder_url ?? null,
+        }}
+        regensUsed={{
+          hero: content.hero_regens_used ?? 0,
+          about: content.about_regens_used ?? 0,
+          catalog: content.catalog_regens_used ?? 0,
         }}
       />
     </WizardShell>

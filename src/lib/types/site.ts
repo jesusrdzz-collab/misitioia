@@ -92,6 +92,10 @@ export interface SiteContent {
   generated_at: string | null
   created_at: string
   updated_at: string
+  /** Regens IA usadas por slot (max 1 c/u). Candado costo Gemini. */
+  hero_regens_used: number
+  about_regens_used: number
+  catalog_regens_used: number
 }
 
 export interface SiteProduct {

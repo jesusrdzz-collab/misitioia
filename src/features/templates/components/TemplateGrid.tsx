@@ -9,9 +9,11 @@ interface Props {
   slug: string
   currentTemplate: string
   currentImages: { hero: string | null; about: string | null; catalog: string | null }
+  /** Regens IA ya usadas por slot. 0 = habilitado, 1 = agotado. */
+  regensUsed: { hero: number; about: number; catalog: number }
 }
 
-export function TemplateGrid({ siteId, slug, currentTemplate, currentImages }: Props) {
+export function TemplateGrid({ siteId, slug, currentTemplate, currentImages, regensUsed }: Props) {
   const templates = listTemplates()
   const [active, setActive] = useState(currentTemplate)
   const [feedback, setFeedback] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null)
@@ -101,24 +103,25 @@ export function TemplateGrid({ siteId, slug, currentTemplate, currentImages }: P
       <div className="pt-4 border-t border-gray-100">
         <h2 className="text-2xl font-bold text-gray-900">Imágenes generadas por IA</h2>
         <p className="text-sm text-gray-500 mt-1">
-          Cada sitio nuevo recibe imágenes propias generadas para su giro. Si alguna no te gustó, regenérala aquí.
+          Cada sitio nuevo recibe imágenes propias generadas para su giro. Si alguna no te gustó, regenérala aquí (una vez por foto).
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <ImageSlot siteId={siteId} slot="hero" label="Imagen de portada (16:9)" current={currentImages.hero} />
-        <ImageSlot siteId={siteId} slot="about" label="Imagen ‘sobre nosotros’ (4:3)" current={currentImages.about} />
-        <ImageSlot siteId={siteId} slot="catalog" label="Placeholder de catálogo (1:1)" current={currentImages.catalog} />
+        <ImageSlot siteId={siteId} slot="hero" label="Imagen de portada (16:9)" current={currentImages.hero} regenUsed={regensUsed.hero > 0} />
+        <ImageSlot siteId={siteId} slot="about" label="Imagen ‘sobre nosotros’ (4:3)" current={currentImages.about} regenUsed={regensUsed.about > 0} />
+        <ImageSlot siteId={siteId} slot="catalog" label="Placeholder de catálogo (1:1)" current={currentImages.catalog} regenUsed={regensUsed.catalog > 0} />
       </div>
     </div>
   )
 }
 
-function ImageSlot({ siteId, slot, label, current }: { siteId: string; slot: 'hero' | 'about' | 'catalog'; label: string; current: string | null }) {
+function ImageSlot({ siteId, slot, label, current, regenUsed }: { siteId: string; slot: 'hero' | 'about' | 'catalog'; label: string; current: string | null; regenUsed: boolean }) {
   const [url, setUrl] = useState<string | null>(current)
   const [source, setSource] = useState<'ai' | 'stock' | null>(null)
   const [msg, setMsg] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
+  const [localRegenUsed, setLocalRegenUsed] = useState(regenUsed)
 
   const regen = () => {
     setMsg(null)
@@ -128,7 +131,10 @@ function ImageSlot({ siteId, slot, label, current }: { siteId: string; slot: 'he
         setUrl(res.url)
         setSource(res.source ?? null)
         setMsg(res.source === 'ai' ? '¡Imagen IA generada!' : 'Imagen fresca lista (fallback stock).')
+        // Solo bloqueamos si Gemini realmente generó (source='ai').
+        if (res.source === 'ai') setLocalRegenUsed(true)
       } else {
+        if (res.code === 'REGEN_LIMIT_REACHED') setLocalRegenUsed(true)
         setMsg(res.error ?? 'No se pudo regenerar.')
       }
     })
@@ -151,11 +157,25 @@ function ImageSlot({ siteId, slot, label, current }: { siteId: string; slot: 'he
         <button
           type="button"
           onClick={regen}
-          disabled={pending}
-          className="mt-3 w-full rounded-xl bg-gray-900 text-white text-xs font-semibold px-4 py-2 hover:bg-gray-800 disabled:opacity-60"
+          disabled={pending || localRegenUsed}
+          title={
+            localRegenUsed
+              ? 'Ya usaste la regeneración con IA de esta foto. Puedes subir la tuya sin límite.'
+              : undefined
+          }
+          className="mt-3 w-full rounded-xl bg-gray-900 text-white text-xs font-semibold px-4 py-2 hover:bg-gray-800 disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          {pending ? 'Generando…' : '↻ Regenerar imagen'}
+          {localRegenUsed
+            ? '✓ Regeneración usada'
+            : pending
+              ? 'Generando…'
+              : '↻ Regenerar imagen'}
         </button>
+        {localRegenUsed && (
+          <p className="text-[10px] text-gray-500 mt-2 leading-snug">
+            Puedes subir tu propia foto sin límite desde la sección de edición.
+          </p>
+        )}
       </div>
     </div>
   )

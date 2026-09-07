@@ -39,6 +39,12 @@ export default async function AparienciaPage({ searchParams }: Props) {
     catalog: content?.catalog_placeholder_url ?? null,
   }
 
+  const regensUsed = {
+    hero: content?.hero_regens_used ?? 0,
+    about: content?.about_regens_used ?? 0,
+    catalog: content?.catalog_regens_used ?? 0,
+  }
+
   const activeSection = 'apariencia' as DashboardSection
 
   const missing = await getLegalMissingForSite(site.siteId)
@@ -51,7 +57,7 @@ export default async function AparienciaPage({ searchParams }: Props) {
       businessName={site.businessName}
       banner={missing.length > 0 ? <LegalGuardBanner siteId={site.siteId} missing={missing} /> : undefined}
     >
-      <TemplateGrid siteId={site.siteId} slug={site.slug} currentTemplate={currentTemplate} currentImages={currentImages} />
+      <TemplateGrid siteId={site.siteId} slug={site.slug} currentTemplate={currentTemplate} currentImages={currentImages} regensUsed={regensUsed} />
     </DashboardShell>
   )
 }

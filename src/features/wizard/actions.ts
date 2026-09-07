@@ -8,7 +8,8 @@ import { authorizeSiteAccess } from '@/features/editor/authorize'
 import { resolveUniqueSlug } from '@/features/generator/slug'
 import { templateForGiro } from '@/features/generator/templates'
 import { GIRO_NOMBRE, giroNombre } from '@/features/generator/giros'
-import { generateSiteImages, regenerateSingleImage } from '@/features/generator/images'
+import { generateSiteImages } from '@/features/generator/images'
+import { regenerateImageWithLock } from '@/features/generator/regen-lock'
 import { suggestTemplateForGiro, TEMPLATE_REGISTRY } from '@/features/templates/registry'
 import { recalculateLegalReady } from '@/lib/legal-guard'
 
@@ -296,14 +297,21 @@ export async function savePaso2Action(
 export async function regenerateWizardImageAction(
   siteId: string,
   slot: 'hero' | 'about' | 'catalog',
-): Promise<{ ok: boolean; url?: string; source?: 'ai' | 'stock'; error?: string }> {
+): Promise<{
+  ok: boolean
+  url?: string
+  source?: 'ai' | 'stock'
+  error?: string
+  code?: 'REGEN_LIMIT_REACHED' | 'GEN_FAILED' | 'DB_ERROR'
+  regensRemaining?: number
+}> {
   const email = await currentUserEmail()
   if (!email) return { ok: false, error: 'Tu sesión expiró.' }
   const authorized = await authorizeSiteAccess(siteId, email)
   if (!authorized) return { ok: false, error: 'No tienes acceso a este sitio.' }
 
   const admin = await createAdminSupabase()
-  const result = await regenerateSingleImage({
+  const result = await regenerateImageWithLock({
     slot,
     giro: authorized.giro,
     giroLibre: authorized.giroLibre,
@@ -311,26 +319,24 @@ export async function regenerateWizardImageAction(
     siteId: authorized.siteId,
     admin,
   })
-  if (!result.ok || !result.url) {
-    return { ok: false, error: result.error ?? 'No se pudo regenerar la imagen.' }
+  if (!result.ok) {
+    return {
+      ok: false,
+      error: result.error ?? 'No se pudo regenerar la imagen.',
+      code: result.code,
+      regensRemaining: result.regensRemaining,
+    }
   }
-
-  const column =
-    slot === 'hero'
-      ? 'hero_image_url'
-      : slot === 'about'
-        ? 'about_image_url'
-        : 'catalog_placeholder_url'
-
-  await admin
-    .from('site_content')
-    .update({ [column]: result.url, updated_at: new Date().toISOString() })
-    .eq('site_id', authorized.siteId)
 
   revalidatePath(`/sites/${authorized.slug}`)
   revalidatePath(`/sites/${authorized.slug}`, 'layout')
 
-  return { ok: true, url: result.url, source: result.source }
+  return {
+    ok: true,
+    url: result.url,
+    source: result.source,
+    regensRemaining: result.regensRemaining,
+  }
 }
 
 /**
