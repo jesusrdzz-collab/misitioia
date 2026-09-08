@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Inter, Playfair_Display } from 'next/font/google'
 import './globals.css'
 import { SITE_URL, BRAND } from '@/features/marketing/brand'
+import { HitBeacon } from '@/features/analytics/components/HitBeacon'
 
 const inter = Inter({
   variable: '--font-inter',
@@ -77,7 +78,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="es"
       className={`${inter.variable} ${playfair.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-sans">{children}</body>
+      <body className="min-h-full flex flex-col font-sans">
+        {children}
+        {/* Beacon anónimo — instrumentación de tráfico para la campaña Meta (7-sep-2026). */}
+        <HitBeacon />
+      </body>
     </html>
   )
 }

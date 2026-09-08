@@ -30,6 +30,16 @@ export interface ExecCtx {
   giro: string | null
   /** Nombre del negocio (para slug en creación). */
   businessName: string | null
+  /**
+   * Atribución de campaña Meta leída de cookies al iniciar el turno.
+   * Se sella en `sites` y `tenants` al crear un sitio nuevo.
+   */
+  attribution?: {
+    fbclid: string | null
+    utmSource: string | null
+    utmCampaign: string | null
+    utmContent: string | null
+  } | null
 }
 
 const HEX = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/
@@ -455,6 +465,19 @@ async function createSite(
     },
   })
 
+  // Atribución de campaña (Meta) — se sella al momento de crear.
+  // Sin cookies (visita orgánica), queda todo null.
+  const attr = ctx.attribution ?? null
+  const attributionPayload = attr && (attr.fbclid || attr.utmSource || attr.utmCampaign || attr.utmContent)
+    ? {
+        attribution_fbclid: attr.fbclid,
+        attribution_source: attr.utmSource,
+        attribution_campaign: attr.utmCampaign,
+        attribution_content: attr.utmContent,
+        attribution_captured_at: new Date().toISOString(),
+      }
+    : {}
+
   // 1) tenant (dueño = usuario autenticado) → estado reclamado (es autoservicio)
   const { data: tenant, error: tErr } = await ctx.admin
     .from('tenants')
@@ -462,6 +485,7 @@ async function createSite(
       owner_email: ctx.ownerEmail,
       owner_phone: a.contact_whatsapp || a.contact_phone || null,
       plan: 'free',
+      ...attributionPayload,
     })
     .select('id')
     .single()
@@ -479,6 +503,7 @@ async function createSite(
       status: 'reclamado',
       source: 'autoservicio',
       claimed_at: new Date().toISOString(),
+      ...attributionPayload,
     })
     .select('id')
     .single()

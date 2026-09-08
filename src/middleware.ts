@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
 import { ROOT_DOMAIN } from '@/lib/domain'
 import { isReservedSubdomain } from '@/lib/reserved-subdomains'
+import { stampAttributionCookies } from '@/lib/attribution'
 
 /**
  * Busca el slug de un sitio por su dominio personalizado (sites.custom_domain).
@@ -71,7 +72,8 @@ export async function middleware(request: NextRequest) {
   // /sites/{slug} de más abajo convertía p.ej. `negocio.misitio.site/api/victoria`
   // en `/sites/negocio/api/victoria` (inexistente) y rompía el widget de Victoria.
   if (request.nextUrl.pathname.startsWith('/api')) {
-    return updateSession(request)
+    const apiRes = await updateSession(request)
+    return stampAttributionCookies(request, apiRes)
   }
 
   // Extraer subdominio: "mi-negocio.misitio.site" → "mi-negocio"
@@ -105,7 +107,7 @@ export async function middleware(request: NextRequest) {
       target.protocol = 'https:'
       target.port = ''
       target.pathname = rest ? `/${rest}` : '/'
-      return NextResponse.redirect(target, 301)
+      return stampAttributionCookies(request, NextResponse.redirect(target, 301))
     }
   }
 
@@ -127,7 +129,7 @@ export async function middleware(request: NextRequest) {
       url.pathname = `/sites/${slug}${url.pathname === '/' ? '' : url.pathname}`
       const response = NextResponse.rewrite(url)
       response.headers.set('x-site-slug', slug)
-      return response
+      return stampAttributionCookies(request, response)
     }
     // Sin coincidencia → continúa al flujo normal (landing / preview).
   }
@@ -145,12 +147,14 @@ export async function middleware(request: NextRequest) {
 
   if (isRootDomain) {
     // Dominio raíz → landing page de MiSitio IA (ruta normal de Next.js)
-    return updateSession(request)
+    const rootRes = await updateSession(request)
+    return stampAttributionCookies(request, rootRes)
   }
 
   // Subdominio reservado → dejar pasar a rutas normales
   if (isReservedSubdomain(currentHost)) {
-    return updateSession(request)
+    const reservedRes = await updateSession(request)
+    return stampAttributionCookies(request, reservedRes)
   }
 
   // Subdominios legacy con guion (herreria-san-juan) → 301 al canónico
@@ -166,7 +170,7 @@ export async function middleware(request: NextRequest) {
       const portMatch = hostname.match(/:(\d+)$/)
       const port = portMatch ? `:${portMatch[1]}` : ''
       redirect.host = `${canonical}${suffix}${port}`
-      return NextResponse.redirect(redirect, 301)
+      return stampAttributionCookies(request, NextResponse.redirect(redirect, 301))
     }
   }
 
@@ -177,7 +181,7 @@ export async function middleware(request: NextRequest) {
   // Pasar el slug como header para que la página lo lea
   response.headers.set('x-site-slug', currentHost)
 
-  return response
+  return stampAttributionCookies(request, response)
 }
 
 export const config = {

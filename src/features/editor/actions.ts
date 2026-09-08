@@ -8,6 +8,7 @@ import { buildSiteSnapshot } from './context'
 import { runEditorAgent } from './agent'
 import type { ExecCtx } from './tools'
 import type { ChatMessage, EditorTurnResult } from './types'
+import { readStoredAttribution } from '@/lib/attribution'
 
 /**
  * Server Actions del editor por chat (Fase 4).
@@ -154,6 +155,8 @@ export async function sendEditorMessage(input: {
 
   const admin = await createAdminSupabase()
 
+  const storedAttribution = await readStoredAttribution().catch(() => null)
+
   const ctx: ExecCtx = {
     admin,
     ownerEmail: email,
@@ -162,6 +165,14 @@ export async function sendEditorMessage(input: {
     slug: null,
     giro: null,
     businessName: null,
+    attribution: storedAttribution
+      ? {
+          fbclid: storedAttribution.fbclid,
+          utmSource: storedAttribution.utmSource,
+          utmCampaign: storedAttribution.utmCampaign,
+          utmContent: storedAttribution.utmContent,
+        }
+      : null,
   }
 
   let snapshot = 'Aún no hay sitio; hay que crearlo.'
