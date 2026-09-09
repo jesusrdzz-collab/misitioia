@@ -1,20 +1,41 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useEffect, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { createPreviewSiteAction } from '../actions'
+import { sendMagicLink } from '@/features/editor/actions'
 import { GIRO_NOMBRE, GIRO_OTROS } from '@/features/generator/giros'
 
 /**
  * Paso 1a — datos mínimos para generar el preview del sitio.
- * Solo pide nombre + giro + descripción libre. Los datos de contacto/dirección
- * van en el Paso 1b. Al submit, crea el sitio en BD (estado 'reclamado') con
- * placeholders visibles y redirige a `/crear/paso-1b?site=<id>`.
  *
- * Fix P0 2026-09-07: si el giro es "otros", pedimos un input libre que se
- * guarda en `sites.giro_libre` y se usa en los prompts de IA para no caer
- * al genérico terracota/artesanía cuando el cliente vende, p.ej., seguros.
+ * Flujo actualizado 2026-09-09 (fix embudo Meta):
+ *
+ * 1. La página se renderiza SIEMPRE, con o sin sesión. El copy prometía
+ *    "aún no pedimos tus datos" pero el LoginGate previo entregaba lo
+ *    contrario y mataba el 100% del tráfico frío. Ahora el usuario llena
+ *    nombre + giro + descripción sin obstáculos.
+ *
+ * 2. Al hacer submit:
+ *      - Si isAuthed=true: llama al action normal y salta a paso-1b.
+ *      - Si isAuthed=false: guarda el payload en sessionStorage y muestra un
+ *        prompt de correo/Google inline ("guardamos lo que escribiste, sólo
+ *        falta identificarte"). Después del auth vuelve a /crear/paso-1a y
+ *        auto-hidrata + auto-envía en montaje.
+ *
+ * 3. Auto-envío en montaje: si isAuthed=true y hay draft en sessionStorage,
+ *    se rehidrata el estado y se dispara el action UNA vez (borramos el draft
+ *    antes para prevenir loop).
  */
+
+const DRAFT_KEY = '_mis_wizard_1a_draft'
+
+interface Draft {
+  businessName: string
+  giro: string
+  giroLibre: string
+  descripcion: string
+}
 
 const GIROS_ORDERED = Object.entries(GIRO_NOMBRE)
   .filter(([slug]) => slug !== GIRO_OTROS)
@@ -23,7 +44,7 @@ const GIROS_ORDERED = Object.entries(GIRO_NOMBRE)
 
 const OTROS_OPTION = { slug: GIRO_OTROS, label: GIRO_NOMBRE[GIRO_OTROS] }
 
-export function Paso1aForm() {
+export function Paso1aForm({ isAuthed }: { isAuthed: boolean }) {
   const router = useRouter()
   const [businessName, setBusinessName] = useState('')
   const [giro, setGiro] = useState('')
@@ -32,29 +53,120 @@ export function Paso1aForm() {
   const [error, setError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
 
+  // Auth prompt inline (aparece tras submit sin sesión)
+  const [showAuthPrompt, setShowAuthPrompt] = useState(false)
+  const [email, setEmail] = useState('')
+  const [magicSent, setMagicSent] = useState(false)
+  const [authError, setAuthError] = useState<string | null>(null)
+  const [magicPending, startMagicTransition] = useTransition()
+
+  const autoSubmittedRef = useRef(false)
+
   const needsGiroLibre = giro === GIRO_OTROS
 
-  function submit(e: React.FormEvent) {
-    e.preventDefault()
-    setError(null)
-    if (needsGiroLibre && giroLibre.trim().length < 3) {
-      setError('Describe brevemente tu giro (mínimo 3 caracteres).')
-      return
+  function saveDraft(): Draft {
+    const draft: Draft = {
+      businessName: businessName.trim(),
+      giro,
+      giroLibre: giroLibre.trim(),
+      descripcion: descripcion.trim(),
     }
+    try {
+      window.sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft))
+    } catch {
+      /* sessionStorage puede fallar en modo privado; el fallback es re-tipear */
+    }
+    return draft
+  }
+
+  function submitPayload(payload: Draft) {
     startTransition(async () => {
       const res = await createPreviewSiteAction({
-        business_name: businessName,
-        giro: giro || null,
-        giro_libre: needsGiroLibre ? giroLibre.trim() : null,
-        descripcion: descripcion || null,
+        business_name: payload.businessName,
+        giro: payload.giro || null,
+        giro_libre: payload.giro === GIRO_OTROS ? payload.giroLibre : null,
+        descripcion: payload.descripcion || null,
       })
       if (res.ok && res.siteId) {
+        // Limpiamos el draft — ya se persistió como site real.
+        try {
+          window.sessionStorage.removeItem(DRAFT_KEY)
+        } catch {
+          /* ok */
+        }
         router.push(`/crear/paso-1b?site=${res.siteId}`)
       } else {
         setError(res.error ?? 'No se pudo crear la vista previa.')
       }
     })
   }
+
+  function submit(e: React.FormEvent) {
+    e.preventDefault()
+    setError(null)
+    setAuthError(null)
+    if (needsGiroLibre && giroLibre.trim().length < 3) {
+      setError('Describe brevemente tu giro (mínimo 3 caracteres).')
+      return
+    }
+    const draft = saveDraft()
+    if (!isAuthed) {
+      // Sin sesión: mostrar prompt inline y esperar login. El auto-submit
+      // ocurre al volver a esta misma ruta con sesión.
+      setShowAuthPrompt(true)
+      return
+    }
+    submitPayload(draft)
+  }
+
+  function submitMagicLink(e: React.FormEvent) {
+    e.preventDefault()
+    setAuthError(null)
+    saveDraft() // asegurar que el draft esté persistido antes de salir
+    startMagicTransition(async () => {
+      const res = await sendMagicLink(email, '/crear/paso-1a')
+      if (res.ok) setMagicSent(true)
+      else setAuthError(res.error || 'No se pudo enviar el enlace.')
+    })
+  }
+
+  // Rehidratación + auto-submit al volver del auth.
+  useEffect(() => {
+    if (autoSubmittedRef.current) return
+    let raw: string | null = null
+    try {
+      raw = window.sessionStorage.getItem(DRAFT_KEY)
+    } catch {
+      return
+    }
+    if (!raw) return
+    try {
+      const parsed = JSON.parse(raw) as Partial<Draft>
+      if (typeof parsed.businessName === 'string') setBusinessName(parsed.businessName)
+      if (typeof parsed.giro === 'string') setGiro(parsed.giro)
+      if (typeof parsed.giroLibre === 'string') setGiroLibre(parsed.giroLibre)
+      if (typeof parsed.descripcion === 'string') setDescripcion(parsed.descripcion)
+      // Si YA está autenticado y hay draft válido, auto-envía inmediatamente.
+      if (
+        isAuthed &&
+        typeof parsed.businessName === 'string' &&
+        parsed.businessName.trim().length >= 2
+      ) {
+        autoSubmittedRef.current = true
+        const clean: Draft = {
+          businessName: parsed.businessName.trim(),
+          giro: (parsed.giro ?? '') as string,
+          giroLibre: (parsed.giroLibre ?? '') as string,
+          descripcion: (parsed.descripcion ?? '') as string,
+        }
+        submitPayload(clean)
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    } catch {
+      /* ignore */
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthed])
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -163,9 +275,75 @@ export function Paso1aForm() {
         </button>
 
         <p className="text-xs text-stone-500 text-center">
-          Aún no pediremos tus datos de contacto. Solo queremos que veas cómo se verá tu sitio.
+          {isAuthed
+            ? 'Aún no pediremos tus datos de contacto. Solo queremos que veas cómo se verá tu sitio.'
+            : 'Al continuar te pediremos sólo tu correo para poder guardar tu sitio (sin contraseñas).'}
         </p>
       </form>
+
+      {showAuthPrompt && !isAuthed && (
+        <div className="mt-6 bg-white rounded-3xl shadow-xl border border-stone-200 p-6 md:p-8">
+          <h2 className="text-xl md:text-2xl font-medium text-neutral-900 mb-2">
+            Ya casi está listo tu preview
+          </h2>
+          <p className="text-sm text-stone-600 mb-5">
+            Guardamos lo que escribiste. Sólo necesitamos tu correo para poder mostrártelo
+            (sin contraseñas). Te tomará 10 segundos.
+          </p>
+
+          {magicSent ? (
+            <div className="text-center bg-green-50 border border-green-100 rounded-2xl p-5">
+              <div className="text-3xl mb-2">📬</div>
+              <p className="text-green-800 font-medium">Revisa tu correo</p>
+              <p className="text-green-700 text-sm mt-1">
+                Te enviamos un enlace a <strong>{email}</strong>. Ábrelo desde este mismo dispositivo
+                y regresarás aquí para ver tu sitio.
+              </p>
+            </div>
+          ) : (
+            <>
+              <a
+                href={`/auth/google?next=${encodeURIComponent('/crear/paso-1a')}`}
+                onClick={() => saveDraft()}
+                className="w-full flex items-center justify-center gap-3 bg-white border border-stone-300 text-neutral-900 font-medium py-3 rounded-xl hover:bg-stone-50 transition-colors"
+              >
+                <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+                  <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62Z" />
+                  <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18Z" />
+                  <path fill="#FBBC05" d="M3.97 10.72a5.4 5.4 0 0 1 0-3.44V4.95H.96a9 9 0 0 0 0 8.1l3.01-2.33Z" />
+                  <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.89 11.42 0 9 0A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58Z" />
+                </svg>
+                Continuar con Google
+              </a>
+
+              <div className="flex items-center gap-3 my-4">
+                <span className="h-px flex-1 bg-stone-200" />
+                <span className="text-xs text-stone-400">o con tu correo</span>
+                <span className="h-px flex-1 bg-stone-200" />
+              </div>
+
+              <form onSubmit={submitMagicLink} className="space-y-3">
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="tu@correo.com"
+                  className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 outline-none"
+                />
+                {authError && <p className="text-red-600 text-sm">{authError}</p>}
+                <button
+                  type="submit"
+                  disabled={magicPending}
+                  className="w-full bg-neutral-900 text-white font-semibold py-3 rounded-xl hover:bg-neutral-800 transition-colors disabled:opacity-60"
+                >
+                  {magicPending ? 'Enviando…' : 'Enviar enlace y ver mi sitio'}
+                </button>
+              </form>
+            </>
+          )}
+        </div>
+      )}
     </div>
   )
 }

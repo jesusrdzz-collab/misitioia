@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createServerSupabase } from '@/lib/supabase/server'
-import { LoginGate } from '@/features/editor/components/LoginGate'
 import { LogoMark } from '@/features/marketing/components/Logo'
 import { getMyLastWizardSite } from '@/features/wizard/actions'
 
@@ -12,15 +11,23 @@ export const metadata = {
 }
 
 /**
- * Landing del wizard. Si el cliente no tiene sesión, LoginGate. Si tiene un
- * wizard a medio hacer, ofrece retomar. Si no, redirige al paso 1a.
+ * Landing del wizard.
+ *
+ * — Sin sesión (100% del tráfico frío de Meta) → redirect directo al Paso 1a.
+ *   El wizard se rellena anónimamente y sólo pide correo al momento de guardar
+ *   el preview. Fix embudo 2026-09-09: antes esta página mostraba un LoginGate
+ *   que rompía el 100% del tráfico de Meta (14 fbclid en /crear, 0 al form).
+ *
+ * — Con sesión: si hay un wizard a medio hacer, ofrece retomar. Si no,
+ *   redirect al Paso 1a.
  */
 export default async function CrearLandingPage() {
   const supabase = await createServerSupabase()
   const { data } = await supabase.auth.getUser()
 
+  // Sin sesión → directo al form. El paso-1a se llena anónimo y pide auth al submit.
   if (!data.user?.email) {
-    return <LoginGate next="/crear" title="Crea tu página" />
+    redirect('/crear/paso-1a')
   }
 
   const pending = await getMyLastWizardSite()
