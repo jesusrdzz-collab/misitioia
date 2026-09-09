@@ -87,41 +87,42 @@ export default function HomePage() {
         <section className="relative overflow-hidden">
           <div className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full bg-orange-200/40 blur-3xl" />
           <div className="pointer-events-none absolute top-40 -left-24 h-80 w-80 rounded-full bg-indigo-200/40 blur-3xl" />
-          <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 py-16 md:grid-cols-2 md:py-24">
+          <div className="relative mx-auto grid max-w-6xl items-center gap-8 px-4 py-10 md:grid-cols-2 md:gap-12 md:py-24">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-sm font-medium text-orange-700">
+              <div className="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-xs font-medium text-orange-700 md:text-sm">
                 <span className="h-2 w-2 animate-pulse rounded-full bg-orange-500" />
-                La nueva era de la búsqueda con IA ya empezó
+                Tu página lista hoy mismo, gratis
               </div>
               <h1
-                className="mt-5 text-4xl font-bold leading-[1.1] tracking-tight text-stone-900 md:text-6xl"
+                className="mt-4 text-3xl font-bold leading-[1.1] tracking-tight text-stone-900 md:mt-5 md:text-6xl"
                 style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
               >
-                Ya no solo se googlea: la gente{' '}
-                <span className="text-orange-600">le pregunta a la IA qué comprar</span>
+                Tu negocio en Google{' '}
+                <span className="text-orange-600">en 30 segundos.</span>{' '}
+                Sin diseñador, sin código.
               </h1>
-              <p className="mt-6 max-w-xl text-lg leading-relaxed text-stone-600">
-                La mayoría de las páginas de hoy son <strong className="font-semibold text-stone-800">invisibles</strong>{' '}
-                para ChatGPT, Gemini y Perplexity. MiSitio IA crea la tuya{' '}
-                <strong className="font-semibold text-stone-800">lista para esos buscadores de IA</strong> (AEO)
-                — y te la entrega <strong className="font-semibold text-stone-800">gratis</strong>.
+              <p className="mt-5 max-w-xl text-base leading-relaxed text-stone-600 md:mt-6 md:text-lg">
+                Le platicas a la IA a qué se dedica tu negocio y{' '}
+                <strong className="font-semibold text-stone-800">te arma tu página profesional</strong> —
+                lista para Google y también para los nuevos buscadores como ChatGPT y Gemini.{' '}
+                <strong className="font-semibold text-stone-800">Gratis.</strong>
               </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row md:mt-8">
                 <Link
                   href="/crear"
-                  className="rounded-xl bg-orange-600 px-8 py-4 text-center text-lg font-semibold text-white shadow-lg shadow-orange-600/25 transition-colors hover:bg-orange-700"
+                  className="rounded-xl bg-orange-600 px-8 py-5 text-center text-xl font-bold text-white shadow-xl shadow-orange-600/30 transition-all hover:bg-orange-700 hover:shadow-2xl md:py-4 md:text-lg md:font-semibold"
                 >
                   Crear mi sitio gratis →
                 </Link>
                 <Link
                   href="#era-ia"
-                  className="rounded-xl border border-stone-300 px-8 py-4 text-center text-lg font-medium text-stone-700 transition-colors hover:bg-white"
+                  className="rounded-xl border border-stone-300 px-8 py-3 text-center text-base font-medium text-stone-700 transition-colors hover:bg-white md:py-4 md:text-lg"
                 >
-                  Cómo cambió la búsqueda
+                  Cómo funciona
                 </Link>
               </div>
               <p className="mt-4 text-sm text-stone-500">
-                Gratis de verdad. Sin tarjeta. Sin permanencia. Tu página lista hoy mismo.
+                Gratis de verdad. Sin permanencia. Tu página lista hoy mismo.
               </p>
             </div>
 
