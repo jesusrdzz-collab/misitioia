@@ -289,7 +289,7 @@ export default function HomePage() {
               <p className="mt-5 text-lg leading-relaxed text-stone-600">
                 Un profesional o una app de las de siempre te cobran miles de pesos por una página. Aquí
                 te la entregamos <strong className="font-semibold text-stone-800">gratis, sin pedirte nada a cambio</strong>.
-                Sin tarjeta, sin prueba con fecha de vencimiento, sin letra chiquita.
+                Sin prueba con fecha de vencimiento, sin letra chiquita, sin permanencia.
               </p>
               <ul className="mt-8 space-y-4">
                 {[
