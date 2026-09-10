@@ -651,3 +651,56 @@ ni el embed (`/instalar`).
 - Volumen real de clientes UENI en México
 - Fecha de origen del claim "700,000 sitios"
 - Precios exactos en CO/CL/BR/ES (verificado solo US y MX)
+
+---
+
+## Fase 10 — API Tokens (Bearer auth para ChatGPT/Claude/Gemini/Zapier) — 2026-09-10
+
+> **Estado:** ✅ IMPLEMENTADA
+> **Objetivo:** El dueño de un sitio puede pedirle a ChatGPT/Claude/Zapier que edite datos, agregue productos, ajuste apariencia o consulte analíticas — sin abrir el panel.
+
+### 10.1 Migración BD
+- [x] `supabase/migrations/20260910100000_api_tokens.sql` — tabla `api_tokens` con RLS por `user_id`. Aplicada al proyecto `mthlqoploeisigzvwory` vía MCP.
+- Columnas clave: `token_prefix` (visible en UI), `token_hash` (SHA-256 hex — es lo único que se guarda), `scopes` (`read`/`write`/`admin`), `last_used_at`, `expires_at`, `revoked_at`.
+
+### 10.2 Utilidad de tokens (Edge-compatible)
+- [x] `src/lib/api-tokens.ts` — `generateApiToken()`, `hashApiToken()`, `extractBearerToken()`. Formato del plaintext: `sk_mi_` + 32 base62. Usa Web Crypto (`crypto.subtle.digest` + `crypto.getRandomValues`) para funcionar tanto en Node como en Edge.
+
+### 10.3 Middleware Bearer
+- [x] `src/middleware.ts` — al inicio del branch `/api/*`:
+  1. Rutas públicas (`/api/openapi.json`, `/api/victoria`, `/api/webchat`, `/api/hit`, `/api/stripe/*`) → pasan sin auth.
+  2. Si viene `Authorization: Bearer sk_mi_...` → validar contra `api_tokens` por hash (service role); si válido, adjuntar headers `x-user-id`, `x-api-token-id`, `x-api-token-scopes` y `last_used_at` fire-and-forget.
+  3. Si no viene Bearer → flujo original con cookie de sesión.
+- Respeta fix del LoginGate del 8-sep (`0b0a4cd8`): las rutas `/crear/*` siguen siendo accesibles para anónimos. El Bearer sólo aplica a `/api/*`.
+
+### 10.4 Endpoints CRUD del propio token
+- [x] `POST /api/tokens` — crea. Retorna `{id, name, prefix, scopes, expiresAt, createdAt, plaintext}` UNA vez.
+- [x] `GET /api/tokens` — lista sin plaintext.
+- [x] `DELETE /api/tokens/[id]` — revoca (soft delete con `revoked_at`).
+- Sólo cookie de sesión — los tokens NO pueden gestionar tokens (bloqueo Bearer explícito).
+
+### 10.5 UI del panel
+- [x] `/settings/api-tokens/page.tsx` (server) + `src/features/api-tokens/components/ApiTokensManager.tsx` (client).
+- Header + botón "Nuevo token", tabla con nombre / prefix / scopes (chips) / último uso / expira / estado / botón revocar. Modales de crear y "token creado" con warning "Guárdalo ahora".
+- Empty state amigable con explicación. En español.
+
+### 10.6 Endpoints REST v1 (superficie de la API)
+- [x] `GET  /api/v1/sites` — lista mis sitios.
+- [x] `GET  /api/v1/sites/{siteId}` — detalle + contenido.
+- [x] `PATCH /api/v1/sites/{siteId}` — editar datos (contacto, ubicación, redes, horarios).
+- [x] `PATCH /api/v1/sites/{siteId}/appearance` — colores, emoji, hero, imágenes.
+- [x] `GET/PUT /api/v1/sites/{siteId}/services` — servicios del sitio.
+- [x] `GET/POST /api/v1/sites/{siteId}/products` — listar/crear productos.
+- [x] `PATCH/DELETE /api/v1/sites/{siteId}/products/{productId}` — actualizar/eliminar producto.
+- [x] `GET /api/v1/sites/{siteId}/analytics` — Meta Pixel ID + GA4 Measurement ID.
+- Helper compartido: `src/lib/api-auth.ts` (`requireApiCaller` + `authorizeSiteForCaller`).
+
+### 10.7 OpenAPI 3.1 público
+- [x] `GET /api/openapi.json` — catálogo público (CORS abierto, cache 5min) con `bearerAuth` global, schemas de Site/SiteContent/Service/Product/Analytics y los ~10 endpoints anteriores. Formato listo para pegar en ChatGPT/Claude/Zapier.
+- URL final: `https://misitio.site/api/openapi.json`.
+
+### 10.8 Seguridad
+- Plaintext NUNCA persistido. Sólo SHA-256 hex.
+- Validación de token en middleware usa `SUPABASE_SERVICE_ROLE_KEY` (bypass RLS).
+- Endpoints REST validan owner por `tenants.owner_email` = email del user de auth (mismo patrón que `authorizeSiteAccess`).
+- Los tokens no pueden gestionar tokens (403 explícito si viene con `x-api-token-id` a `/api/tokens*`).

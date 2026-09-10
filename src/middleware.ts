@@ -3,6 +3,7 @@ import { updateSession } from '@/lib/supabase/middleware'
 import { ROOT_DOMAIN } from '@/lib/domain'
 import { isReservedSubdomain } from '@/lib/reserved-subdomains'
 import { stampAttributionCookies } from '@/lib/attribution'
+import { extractBearerToken, hashApiToken } from '@/lib/api-tokens'
 
 /**
  * Busca el slug de un sitio por su dominio personalizado (sites.custom_domain).
@@ -63,6 +64,117 @@ async function lookupCanonicalSlugForLegacy(
   }
 }
 
+/**
+ * Rutas de API que son PÚBLICAS (sin necesidad de cookie ni Bearer):
+ *  - /api/openapi.json → catálogo de endpoints para ChatGPT/Claude/Zapier
+ *  - /api/victoria     → webchat de sitios (auth propia por token público)
+ *  - /api/webchat      → alias del anterior
+ *  - /api/hit          → tracking cross-origin (POST desde el sitio del cliente)
+ *  - /api/stripe/*     → webhooks firmados
+ */
+const PUBLIC_API_PATHS: readonly string[] = [
+  '/api/openapi.json',
+  '/api/victoria',
+  '/api/webchat',
+  '/api/hit',
+  '/api/stripe',
+]
+
+function isPublicApiPath(pathname: string): boolean {
+  return PUBLIC_API_PATHS.some(
+    (p) => pathname === p || pathname.startsWith(p + '/'),
+  )
+}
+
+interface BearerAuthOk {
+  ok: true
+  userId: string
+  tokenId: string
+  scopes: string[]
+}
+interface BearerAuthFail {
+  ok: false
+  reason: 'invalid' | 'revoked' | 'expired' | 'not-found'
+}
+
+/**
+ * Valida un Bearer token contra la tabla `api_tokens` usando el service role
+ * a través de PostgREST. Devuelve el user_id si es válido.
+ * Se ejecuta en Edge — usa fetch a la API REST de Supabase.
+ */
+async function validateBearerToken(
+  token: string,
+): Promise<BearerAuthOk | BearerAuthFail> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !serviceKey) return { ok: false, reason: 'invalid' }
+
+  const hash = await hashApiToken(token)
+  try {
+    const res = await fetch(
+      `${url}/rest/v1/api_tokens?select=id,user_id,scopes,revoked_at,expires_at&token_hash=eq.${encodeURIComponent(hash)}&limit=1`,
+      {
+        headers: {
+          apikey: serviceKey,
+          Authorization: `Bearer ${serviceKey}`,
+        },
+        cache: 'no-store',
+      },
+    )
+    if (!res.ok) return { ok: false, reason: 'invalid' }
+    const rows = (await res.json()) as Array<{
+      id: string
+      user_id: string
+      scopes: string[] | null
+      revoked_at: string | null
+      expires_at: string | null
+    }>
+    const row = rows[0]
+    if (!row) return { ok: false, reason: 'not-found' }
+    if (row.revoked_at) return { ok: false, reason: 'revoked' }
+    if (row.expires_at && new Date(row.expires_at) <= new Date()) {
+      return { ok: false, reason: 'expired' }
+    }
+    return {
+      ok: true,
+      userId: row.user_id,
+      tokenId: row.id,
+      scopes: row.scopes ?? [],
+    }
+  } catch {
+    return { ok: false, reason: 'invalid' }
+  }
+}
+
+/**
+ * Fire-and-forget: actualiza last_used_at del token. No bloqueamos la petición
+ * si falla; el tiempo de vida de la petición del middleware es corto y no
+ * queremos añadir latencia. `waitUntil` lo mantiene vivo tras responder.
+ */
+function touchTokenLastUsed(tokenId: string): void {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !serviceKey) return
+  try {
+    void fetch(
+      `${url}/rest/v1/api_tokens?id=eq.${encodeURIComponent(tokenId)}`,
+      {
+        method: 'PATCH',
+        headers: {
+          apikey: serviceKey,
+          Authorization: `Bearer ${serviceKey}`,
+          'Content-Type': 'application/json',
+          Prefer: 'return=minimal',
+        },
+        body: JSON.stringify({ last_used_at: new Date().toISOString() }),
+        cache: 'no-store',
+      },
+    ).catch(() => {})
+  } catch {
+    // ignorar
+  }
+}
+
 export async function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || ''
   const url = request.nextUrl.clone()
@@ -72,6 +184,43 @@ export async function middleware(request: NextRequest) {
   // /sites/{slug} de más abajo convertía p.ej. `negocio.misitio.site/api/victoria`
   // en `/sites/negocio/api/victoria` (inexistente) y rompía el widget de Victoria.
   if (request.nextUrl.pathname.startsWith('/api')) {
+    const pathname = request.nextUrl.pathname
+
+    // Rutas API públicas → responder tal cual (sin cookie ni Bearer).
+    if (isPublicApiPath(pathname)) {
+      const publicRes = NextResponse.next({ request })
+      return stampAttributionCookies(request, publicRes)
+    }
+
+    // Bearer auth (para ChatGPT / Claude / Zapier / Gemini). Se evalúa ANTES
+    // que la cookie: si viene el header `Authorization: Bearer sk_mi_...` es
+    // una llamada máquina-a-máquina y no queremos meterla al flujo de cookies.
+    const bearer = extractBearerToken(request.headers.get('authorization'))
+    if (bearer) {
+      const auth = await validateBearerToken(bearer)
+      if (!auth.ok) {
+        return NextResponse.json(
+          { error: 'Token inválido o expirado.' },
+          { status: 401 },
+        )
+      }
+
+      // Fire-and-forget para no añadir latencia. No await.
+      touchTokenLastUsed(auth.tokenId)
+
+      // Adjuntamos user_id y scopes en headers internos para los route handlers.
+      const bearerHeaders = new Headers(request.headers)
+      bearerHeaders.set('x-user-id', auth.userId)
+      bearerHeaders.set('x-api-token-id', auth.tokenId)
+      bearerHeaders.set('x-api-token-scopes', auth.scopes.join(','))
+      const bearerRes = NextResponse.next({
+        request: { headers: bearerHeaders },
+      })
+      // Sin cookies de sesión ni atribución — es una llamada de API pura.
+      return bearerRes
+    }
+
+    // Sin Bearer → flujo original con cookies de sesión.
     const apiRes = await updateSession(request)
     return stampAttributionCookies(request, apiRes)
   }
