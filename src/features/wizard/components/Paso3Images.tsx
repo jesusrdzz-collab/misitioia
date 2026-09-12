@@ -9,6 +9,7 @@ import {
 } from '../actions'
 import { uploadSiteImage } from '@/features/editor/actions'
 import { siteUrl } from '@/lib/domain'
+import { trackFbq } from '@/features/marketing/lib/pixel'
 
 type Slot = 'hero' | 'about' | 'catalog'
 
@@ -53,6 +54,15 @@ export function Paso3Images({ siteId, slug, initial, regensUsed }: Props) {
   }
 
   function finish() {
+    // Meta Pixel: tenant/site creado y publicado — punto máximo del funnel.
+    // Se dispara ANTES del server action porque éste hace redirect() y no
+    // regresa control al cliente. Si por alguna razón la autorización falla,
+    // el server action redirige a /crear/paso-1a (falso positivo aceptable —
+    // el usuario ya completó los 3 pasos, aunque no autoricemos su site).
+    trackFbq('CompleteRegistration', {
+      content_name: 'wizard_completado',
+      status: 'site_publicado',
+    })
     startTransition(async () => {
       // Server action is a redirect() → nunca resuelve; el push es no-op tras.
       await finishWizardAction(siteId)

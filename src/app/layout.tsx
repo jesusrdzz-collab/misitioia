@@ -3,6 +3,7 @@ import { Inter, Playfair_Display } from 'next/font/google'
 import './globals.css'
 import { SITE_URL, BRAND } from '@/features/marketing/brand'
 import { HitBeacon } from '@/features/analytics/components/HitBeacon'
+import { CorporatePixel } from '@/features/marketing/components/CorporatePixel'
 
 const inter = Inter({
   variable: '--font-inter',
@@ -82,6 +83,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {children}
         {/* Beacon anónimo — instrumentación de tráfico para la campaña Meta (7-sep-2026). */}
         <HitBeacon />
+        {/* Meta Pixel corporativo — funnel de la campaña Meta Ads (11-sep-2026).
+            Es el pixel de la fábrica (misitio.site), NO el de cada tenant. */}
+        <CorporatePixel />
       </body>
     </html>
   )

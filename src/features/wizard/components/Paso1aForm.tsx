@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createPreviewSiteAction } from '../actions'
 import { sendMagicLink, signUpWithPassword } from '@/features/editor/actions'
 import { GIRO_NOMBRE, GIRO_OTROS } from '@/features/generator/giros'
+import { trackFbq } from '@/features/marketing/lib/pixel'
 
 /**
  * Paso 1a — datos mínimos para generar el preview del sitio.
@@ -67,6 +68,15 @@ export function Paso1aForm({ isAuthed }: { isAuthed: boolean }) {
   const [passwordPending, startPasswordTransition] = useTransition()
 
   const autoSubmittedRef = useRef(false)
+  // Guard: Lead se dispara UNA sola vez por render de este form (evita
+  // duplicados entre submitPayload, magic link y password signup).
+  const leadFiredRef = useRef(false)
+
+  function fireLeadOnce(source: 'preview_ok' | 'magic_link' | 'password_signup') {
+    if (leadFiredRef.current) return
+    leadFiredRef.current = true
+    trackFbq('Lead', { content_name: 'wizard_paso_1a', method: source })
+  }
 
   const needsGiroLibre = giro === GIRO_OTROS
 
@@ -100,6 +110,8 @@ export function Paso1aForm({ isAuthed }: { isAuthed: boolean }) {
         } catch {
           /* ok */
         }
+        // Meta Pixel: paso-1a completado con éxito (lead calificado).
+        fireLeadOnce('preview_ok')
         router.push(`/crear/paso-1b?site=${res.siteId}`)
       } else {
         setError(res.error ?? 'No se pudo crear la vista previa.')
@@ -131,8 +143,11 @@ export function Paso1aForm({ isAuthed }: { isAuthed: boolean }) {
     saveDraft() // asegurar que el draft esté persistido antes de salir
     startMagicTransition(async () => {
       const res = await sendMagicLink(email, '/crear/paso-1a')
-      if (res.ok) setMagicSent(true)
-      else setAuthError(res.error || 'No se pudo enviar el enlace.')
+      if (res.ok) {
+        setMagicSent(true)
+        // Meta Pixel: lead calificado — dejó su correo y le mandamos el link.
+        fireLeadOnce('magic_link')
+      } else setAuthError(res.error || 'No se pudo enviar el enlace.')
     })
   }
 
@@ -146,6 +161,9 @@ export function Paso1aForm({ isAuthed }: { isAuthed: boolean }) {
         setAuthError(res.error || 'No se pudo crear la cuenta.')
         return
       }
+      // Meta Pixel: lead calificado (cuenta creada) — el CompleteRegistration
+      // se disparará al final del wizard cuando el sitio quede publicado.
+      fireLeadOnce('password_signup')
       // Sesión activa (cookies puestas). Un refresh del router re-renderea el
       // Server Component con isAuthed=true → el useEffect abajo re-hidrata el
       // draft y auto-envía el paso 1a.
