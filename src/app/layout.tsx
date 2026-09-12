@@ -4,6 +4,7 @@ import './globals.css'
 import { SITE_URL, BRAND } from '@/features/marketing/brand'
 import { HitBeacon } from '@/features/analytics/components/HitBeacon'
 import { CorporatePixel } from '@/features/marketing/components/CorporatePixel'
+import { CookieConsentBanner } from '@/features/analytics/components/CookieConsentBanner'
 
 const inter = Inter({
   variable: '--font-inter',
@@ -86,6 +87,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Meta Pixel corporativo — funnel de la campaña Meta Ads (11-sep-2026).
             Es el pixel de la fábrica (misitio.site), NO el de cada tenant. */}
         <CorporatePixel />
+        {/* Banner de consentimiento de cookies para la app raíz de misitio.site
+            (11-sep-2026). Sin este banner, el CorporatePixel se quedaba en
+            `consent: revoke` permanente y el Events Manager no recibía PageView
+            ni Lead. Al aceptar se emite `cookie-consent-changed` con
+            `granted:true`, que el pixel escucha para pasar a `consent: grant`
+            y disparar `PageView`. */}
+        <CookieConsentBanner cookiesPath="/cookies" enabled={true} />
       </body>
     </html>
   )

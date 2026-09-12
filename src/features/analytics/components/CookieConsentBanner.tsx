@@ -92,12 +92,12 @@ export function CookieConsentBanner({ cookiesPath, enabled }: Props) {
       aria-label="Aviso de cookies"
       className="fixed inset-x-0 bottom-0 z-40 px-3 pb-3 sm:px-5 sm:pb-5"
     >
-      <div className="mx-auto max-w-3xl rounded-2xl border border-gray-200 bg-white/95 backdrop-blur shadow-xl p-4 sm:p-5">
+      <div className="mx-auto max-w-3xl rounded-2xl border border-stone-200 bg-white/95 backdrop-blur shadow-xl p-4 sm:p-5">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-          <p className="text-sm text-gray-700 leading-relaxed flex-1">
+          <p className="text-sm text-stone-700 leading-relaxed flex-1">
             Usamos cookies para entender cómo se navega el sitio y mostrar mejores anuncios.
             Puedes aceptarlas o quedarte solo con las esenciales.{' '}
-            <a href={cookiesPath} className="text-blue-600 hover:underline">
+            <a href={cookiesPath} className="font-medium text-orange-700 hover:underline">
               Más información
             </a>
             .
@@ -105,13 +105,13 @@ export function CookieConsentBanner({ cookiesPath, enabled }: Props) {
           <div className="flex flex-wrap gap-2 sm:shrink-0">
             <button
               onClick={() => choose('denied')}
-              className="rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="rounded-xl border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
             >
               Solo esenciales
             </button>
             <button
               onClick={() => choose('granted')}
-              className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+              className="rounded-xl bg-orange-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-orange-600/20 hover:bg-orange-700"
             >
               Aceptar
             </button>
