@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { createPreviewSiteAction } from '../actions'
-import { sendMagicLink } from '@/features/editor/actions'
+import { sendMagicLink, signUpWithPassword } from '@/features/editor/actions'
 import { GIRO_NOMBRE, GIRO_OTROS } from '@/features/generator/giros'
 
 /**
@@ -59,6 +59,12 @@ export function Paso1aForm({ isAuthed }: { isAuthed: boolean }) {
   const [magicSent, setMagicSent] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
   const [magicPending, startMagicTransition] = useTransition()
+
+  // Registro con email + contraseña (2026-09-11 — tercera puerta post-signup).
+  // 'choose' es la UI por defecto; 'password' abre el sub-form.
+  const [authMode, setAuthMode] = useState<'choose' | 'password'>('choose')
+  const [password, setPassword] = useState('')
+  const [passwordPending, startPasswordTransition] = useTransition()
 
   const autoSubmittedRef = useRef(false)
 
@@ -127,6 +133,23 @@ export function Paso1aForm({ isAuthed }: { isAuthed: boolean }) {
       const res = await sendMagicLink(email, '/crear/paso-1a')
       if (res.ok) setMagicSent(true)
       else setAuthError(res.error || 'No se pudo enviar el enlace.')
+    })
+  }
+
+  function submitPasswordSignup(e: React.FormEvent) {
+    e.preventDefault()
+    setAuthError(null)
+    saveDraft() // preserva el draft antes de que router refresque
+    startPasswordTransition(async () => {
+      const res = await signUpWithPassword(email, password)
+      if (!res.ok) {
+        setAuthError(res.error || 'No se pudo crear la cuenta.')
+        return
+      }
+      // Sesión activa (cookies puestas). Un refresh del router re-renderea el
+      // Server Component con isAuthed=true → el useEffect abajo re-hidrata el
+      // draft y auto-envía el paso 1a.
+      router.refresh()
     })
   }
 
@@ -300,6 +323,61 @@ export function Paso1aForm({ isAuthed }: { isAuthed: boolean }) {
                 y regresarás aquí para ver tu sitio.
               </p>
             </div>
+          ) : authMode === 'password' ? (
+            <form onSubmit={submitPasswordSignup} className="space-y-3">
+              <div>
+                <label htmlFor="signup_email" className="block text-sm font-semibold text-neutral-900 mb-1.5">
+                  Tu correo
+                </label>
+                <input
+                  id="signup_email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="tu@correo.com"
+                  className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 outline-none"
+                />
+              </div>
+              <div>
+                <label htmlFor="signup_password" className="block text-sm font-semibold text-neutral-900 mb-1.5">
+                  Crea una contraseña
+                </label>
+                <input
+                  id="signup_password"
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  minLength={8}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Mínimo 8 caracteres"
+                  className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 outline-none"
+                />
+                <p className="text-xs text-stone-500 mt-1.5">
+                  Guárdala — la usarás para volver a entrar a editar tu sitio.
+                </p>
+              </div>
+              {authError && <p className="text-red-600 text-sm">{authError}</p>}
+              <button
+                type="submit"
+                disabled={passwordPending || password.length < 8}
+                className="w-full bg-neutral-900 text-white font-semibold py-3 rounded-xl hover:bg-neutral-800 transition-colors disabled:opacity-60"
+              >
+                {passwordPending ? 'Creando cuenta…' : 'Crear cuenta y ver mi sitio'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthMode('choose')
+                  setAuthError(null)
+                }}
+                className="w-full text-sm text-stone-500 hover:text-neutral-900 underline underline-offset-4"
+              >
+                ← Volver a las otras opciones
+              </button>
+            </form>
           ) : (
             <>
               <a
@@ -325,6 +403,7 @@ export function Paso1aForm({ isAuthed }: { isAuthed: boolean }) {
               <form onSubmit={submitMagicLink} className="space-y-3">
                 <input
                   type="email"
+                  autoComplete="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -340,6 +419,27 @@ export function Paso1aForm({ isAuthed }: { isAuthed: boolean }) {
                   {magicPending ? 'Enviando…' : 'Enviar enlace y ver mi sitio'}
                 </button>
               </form>
+
+              <div className="flex items-center gap-3 my-4">
+                <span className="h-px flex-1 bg-stone-200" />
+                <span className="text-xs text-stone-400">o crea una contraseña</span>
+                <span className="h-px flex-1 bg-stone-200" />
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthError(null)
+                  setAuthMode('password')
+                }}
+                className="w-full flex items-center justify-center gap-3 bg-white border border-stone-300 text-neutral-900 font-medium py-3 rounded-xl hover:bg-stone-50 transition-colors"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <rect x="3" y="11" width="18" height="10" rx="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+                Crear cuenta con contraseña
+              </button>
             </>
           )}
         </div>

@@ -55,6 +55,85 @@ export async function sendMagicLink(
   return { ok: true }
 }
 
+/**
+ * Registro con email + contraseña (opción adicional al Magic Link + Google
+ * OAuth). Se creó el 2026-09-11 tras ver que la campaña Meta llevaba 30h con
+ * 314 sesiones y solo 1 signup (via magic link) — se agrega una tercera puerta
+ * de entrada para reducir la fricción del correo con enlace.
+ *
+ * Flujo:
+ *  1. Valida email + contraseña (mínimo 8 caracteres).
+ *  2. Usa el cliente admin (service_role) para crear el usuario con
+ *     `email_confirm: true` — así puede continuar al wizard sin bloquear
+ *     por verificación (Jesús decidió que la verificación es opcional para
+ *     no matar el embudo con friction extra).
+ *  3. Si el correo ya existe (típico si un cliente vuelve tras magic link),
+ *     intenta iniciar sesión directamente con la contraseña.
+ *  4. Firma la sesión en cookies con signInWithPassword del server client
+ *     para que la siguiente request ya vea al usuario autenticado.
+ *  5. Devuelve `{ ok: true }` y el paso-1a rehidrata el draft en el useEffect.
+ */
+export async function signUpWithPassword(
+  email: string,
+  password: string,
+): Promise<{ ok: boolean; error?: string; alreadyExists?: boolean }> {
+  const clean = email.trim().toLowerCase()
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(clean)) {
+    return { ok: false, error: 'Escribe un correo válido.' }
+  }
+  if (typeof password !== 'string' || password.length < 8) {
+    return { ok: false, error: 'La contraseña debe tener al menos 8 caracteres.' }
+  }
+  if (password.length > 128) {
+    return { ok: false, error: 'La contraseña es demasiado larga.' }
+  }
+
+  const admin = await createAdminSupabase()
+
+  // Intento 1: crear al usuario ya confirmado. Si ya existe (regreso, magic link
+  // previo, etc.) capturamos el error y caemos al signIn directo.
+  let userAlreadyExists = false
+  const { error: createErr } = await admin.auth.admin.createUser({
+    email: clean,
+    password,
+    email_confirm: true,
+  })
+  if (createErr) {
+    const msg = (createErr.message || '').toLowerCase()
+    const isDuplicate =
+      msg.includes('already') ||
+      msg.includes('registered') ||
+      msg.includes('exists') ||
+      msg.includes('duplicate')
+    if (!isDuplicate) {
+      return { ok: false, error: createErr.message || 'No se pudo crear la cuenta.' }
+    }
+    userAlreadyExists = true
+  }
+
+  // Iniciar sesión en cookies. Si el correo ya existía sin esta contraseña,
+  // signIn fallará: devolvemos alreadyExists para que el UI pida iniciar
+  // sesión con la contraseña correcta (o usar magic link).
+  const supabase = await createServerSupabase()
+  const { error: signInErr } = await supabase.auth.signInWithPassword({
+    email: clean,
+    password,
+  })
+  if (signInErr) {
+    if (userAlreadyExists) {
+      return {
+        ok: false,
+        alreadyExists: true,
+        error:
+          'Ese correo ya está registrado con otra contraseña. Usa la contraseña correcta o entra con Magic Link.',
+      }
+    }
+    return { ok: false, error: signInErr.message || 'No se pudo iniciar sesión.' }
+  }
+
+  return { ok: true, alreadyExists: userAlreadyExists }
+}
+
 export async function signOut(): Promise<void> {
   const supabase = await createServerSupabase()
   await supabase.auth.signOut()
